@@ -1,175 +1,134 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>🤖 Alfa AI</title>
-  <style>
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-    }
-
-    #chatButton {
-      position: fixed;
-      bottom: 20px;
-      right: 20px;
-      padding: 15px 25px;
-      background-color: #007bff;
-      color: white;
-      border: none;
-      border-radius: 25px;
-      cursor: pointer;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-    }
-
-    #chatContainer {
-      position: fixed;
-      bottom: 20px;
-      right: 20px;
-      width: 350px;
-      height: 500px;
-      background-color: white;
-      border-radius: 10px;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-      display: none;
-      flex-direction: column;
-    }
-
-    .chat-header {
-      padding: 15px;
-      background-color: #007bff;
-      color: white;
-      border-radius: 10px 10px 0 0;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    #minimizeBtn {
-      background: none;
-      border: none;
-      color: white;
-      cursor: pointer;
-      font-size: 1.2em;
-    }
-
-    #chatMessages {
-      flex: 1;
-      padding: 15px;
-      overflow-y: auto;
-      background-color: #f8f9fa;
-    }
-
-    .message {
-      margin-bottom: 10px;
-      padding: 8px 12px;
-      border-radius: 15px;
-      max-width: 80%;
-    }
-
-    .user-message {
-      background-color: #007bff;
-      color: white;
-      margin-left: auto;
-    }
-
-    .bot-message {
-      background-color: #e9ecef;
-      color: black;
-      margin-right: auto;
-    }
-
-    #inputGroup {
-      padding: 15px;
-      background-color: white;
-      display: flex;
-      gap: 10px;
-      border-top: 1px solid #dee2e6;
-    }
-
-    #userInput {
-      flex: 1;
-      padding: 10px;
-      border: 1px solid #dee2e6;
-      border-radius: 20px;
-      outline: none;
-    }
-
-    #sendBtn {
-      padding: 10px 20px;
-      background-color: #007bff;
-      color: white;
-      border: none;
-      border-radius: 20px;
-      cursor: pointer;
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🤖 Alfa AI Full Features</title>
+<style>
+body, html{margin:0;padding:0;height:100%;width:100%;font-family:Arial,sans-serif;background:#f0f2f5;}
+#chatButton{position:fixed;bottom:20px;right:20px;padding:15px 25px;background:#007bff;color:white;border:none;border-radius:25px;cursor:pointer;box-shadow:0 4px 8px rgba(0,0,0,0.2);z-index:9999;}
+#chatContainer{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:white;z-index:10000;flex-direction:column;resize:both;overflow:auto;box-shadow:0 4px 12px rgba(0,0,0,0.2);}
+#chatHeader{background:#007bff;color:white;padding:15px;display:flex;justify-content:space-between;align-items:center;cursor:move;}
+#chatMessages{flex:1;padding:15px;overflow-y:auto;background:#f8f9fa;}
+.message{margin-bottom:10px;padding:10px 15px;border-radius:20px;max-width:80%;word-wrap:break-word;position:relative;}
+.user-message{background:#007bff;color:white;margin-left:auto;}
+.bot-message{background:#e9ecef;color:black;margin-right:auto;}
+.codeBlock{background:#1e1e1e;color:#dcdcdc;padding:8px 12px;border-radius:8px;font-family:monospace;overflow-x:auto;}
+img.chat-img{max-width:100%;border-radius:8px;margin:5px 0;}
+.buttonReply{margin:2px 2px;padding:4px 8px;background:#2563eb;color:white;border-radius:6px;cursor:pointer;display:inline-block;}
+.buttonReply:hover{background:#1e40af;}
+#inputGroup{padding:15px;background:#fff;display:flex;gap:10px;border-top:1px solid #dee2e6;}
+#userInput{flex:1;padding:10px;border:1px solid #dee2e6;border-radius:20px;outline:none;}
+#sendBtn{padding:10px 20px;background:#007bff;color:white;border:none;border-radius:20px;cursor:pointer;}
+#videoCallBtn{padding:10px 20px;background:#10b981;color:white;border:none;border-radius:20px;cursor:pointer;margin-left:5px;}
+.messageActions{position:absolute;top:5px;right:10px;display:flex;gap:5px;}
+.messageActions span{cursor:pointer;font-size:0.9em;}
+</style>
 </head>
 <body>
-  <button id="chatButton" onclick="toggleChat()">Chat</button>
-  
-  <div id="chatContainer">
-    <div class="chat-header">
-      <span>🤖 Alfa AI</span>
-      <button id="minimizeBtn" onclick="toggleChat()">−</button>
-    </div>
-    <div id="chatMessages"></div>
-    <div id="inputGroup">
-      <input type="text" id="userInput" placeholder="Type your message...">
-      <button id="sendBtn" onclick="sendMessage()">Send</button>
+
+<button id="chatButton" onclick="toggleChat()">Chat</button>
+
+<div id="chatContainer" class="flex flex-col">
+  <div id="chatHeader">
+    <span>🤖 Alfa AI Full Features</span>
+    <div>
+      <button onclick="toggleChat()">×</button>
+      <button id="videoCallBtn" onclick="startVideoCall()">📹 Video</button>
     </div>
   </div>
+  <div id="chatMessages"></div>
+  <div id="inputGroup">
+    <input type="text" id="userInput" placeholder="Type your message..." />
+    <button onclick="startVoice()">🎤</button>
+    <button id="sendBtn" onclick="sendMessage()">Send</button>
+    <button onclick="exportChat()">💾 Export</button>
+    <input type="file" id="fileUpload" style="display:none;" onchange="uploadFile(event)"/>
+    <button onclick="document.getElementById('fileUpload').click()">📁 Upload</button>
+  </div>
+</div>
 
-  <script>
-    function toggleChat() {
-      const container = document.getElementById('chatContainer');
-      const button = document.getElementById('chatButton');
-      container.style.display = container.style.display === 'none' ? 'flex' : 'none';
-      button.style.display = container.style.display === 'none' ? 'block' : 'none';
-    }
+<script>
+// Toggle Chat
+function toggleChat(){
+  const container=document.getElementById('chatContainer');
+  const button=document.getElementById('chatButton');
+  if(container.style.display==='flex'){container.style.display='none';button.style.display='block';}
+  else{container.style.display='flex';button.style.display='none';document.getElementById('userInput').focus();}
+}
 
-    function appendMessage(message, isUser) {
-      const chatMessages = document.getElementById('chatMessages');
-      const messageDiv = document.createElement('div');
-      messageDiv.className = `message ${isUser ? 'user-message' : 'bot-message'}`;
-      messageDiv.textContent = message;
-      chatMessages.appendChild(messageDiv);
-      chatMessages.scrollTop = chatMessages.scrollHeight;
-    }
+// Append message
+function appendMessage(text,isUser){
+  const chatMessages=document.getElementById('chatMessages');
+  const div=document.createElement('div'); div.className='message '+(isUser?'user-message':'bot-message');
+  const codeRegex=/```([\s\S]*?)```/g;
+  text=text.replace(codeRegex,(m,p1)=>`<div class="codeBlock">${p1}</div>`);
+  const imgRegex=/!\[.*?\]\((.*?)\)/g;
+  text=text.replace(imgRegex,(m,p1)=>`<img src="${p1}" class="chat-img" />`);
+  const buttonRegex=/::button::(.*?)::\/button::/g;
+  text=text.replace(buttonRegex,(m,p1)=>`<span class="buttonReply" onclick="sendQuickReply('${p1}')">${p1}</span>`);
+  div.innerHTML=text;
 
-    async function sendMessage() {
-      const userInput = document.getElementById('userInput');
-      const message = userInput.value.trim();
-      
-      if (!message) return;
+  // Message actions (edit/delete/like)
+  const actions=document.createElement('div'); actions.className='messageActions';
+  if(isUser){
+    const edit=document.createElement('span'); edit.textContent='✏️'; edit.onclick=()=>editMessage(div); actions.appendChild(edit);
+    const del=document.createElement('span'); del.textContent='🗑️'; del.onclick=()=>deleteMessage(div); actions.appendChild(del);
+  }
+  const like=document.createElement('span'); like.textContent='👍'; like.onclick=()=>likeMessage(div); actions.appendChild(like);
+  div.appendChild(actions);
 
-      appendMessage(message, true);
-      userInput.value = '';
+  chatMessages.appendChild(div); chatMessages.scrollTop=chatMessages.scrollHeight;
 
-      try {
-        const response = await fetch("/api/alfa", {   // 👈 backend route call
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ message }),
-        });
+  // Save history
+  let chatHistory=JSON.parse(localStorage.getItem('chatHistory')||'[]');
+  chatHistory.push({text,isUser}); localStorage.setItem('chatHistory',JSON.stringify(chatHistory));
+}
 
-        const data = await response.json();
-        if (data.reply) {
-          appendMessage(data.reply, false);
-        } else {
-          appendMessage("⚠️ Error: " + (data.error || "Something went wrong"), false);
-        }
-      } catch (error) {
-        console.error("Error:", error);
-        appendMessage("⚠️ Network error, please try again.", false);
-      }
-    }
+// Send message
+async function sendMessage(){
+  const input=document.getElementById('userInput'); let msg=input.value.trim();
+  if(!msg) return; appendMessage(msg,true); input.value='';
+  const typingDiv=document.createElement('div'); typingDiv.className='bot-message'; typingDiv.textContent='Typing...'; document.getElementById('chatMessages').appendChild(typingDiv);
+  document.getElementById('chatMessages').scrollTop=document.getElementById('chatMessages').scrollHeight;
+  try{
+    const res=await fetch('/api/alfa',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:msg})});
+    const data=await res.json(); typingDiv.remove();
+    if(data.reply) appendMessage(data.reply,false);
+    else appendMessage('⚠️ Something went wrong',false);
+  }catch(err){typingDiv.remove(); appendMessage('⚠️ Network error',false);}
+}
 
-    // Allow Enter key to send message
-    document.getElementById('userInput').addEventListener('keypress', (e) => {
-      if (e.key === 'Enter') sendMessage();
-    });
-  </script>
+// Quick reply
+function sendQuickReply(text){document.getElementById('userInput').value=text; sendMessage();}
+
+// Voice input
+function startVoice(){
+  const recognition=new (window.SpeechRecognition||window.webkitSpeechRecognition)();
+  recognition.lang='en-US';
+  recognition.onresult=function(event){document.getElementById('userInput').value=event.results[0][0].transcript; sendMessage();}
+  recognition.start();
+}
+
+// Video Call placeholder
+function startVideoCall(){alert("Video call placeholder. Integrate WebRTC or your service here.");}
+
+// Edit / Delete / Like
+function editMessage(div){let newText=prompt("Edit your message:",div.childNodes[0].textContent); if(newText) div.childNodes[0].textContent=newText;}
+function deleteMessage(div){div.remove();}
+function likeMessage(div){alert("You liked this message!");}
+
+// File Upload
+function uploadFile(event){const file=event.target.files[0];if(file){appendMessage('Uploaded file: '+file.name,true);}}
+
+// Export chat
+function exportChat(){let chatHistory=localStorage.getItem('chatHistory')||'[]';let blob=new Blob([chatHistory],{type:'text/plain'});let a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='chat.txt';a.click();}
+
+// Load history
+let chatHistory=JSON.parse(localStorage.getItem('chatHistory')||'[]');
+chatHistory.forEach(msg=>appendMessage(msg.text,msg.isUser));
+
+</script>
+
 </body>
 </html>
