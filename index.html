@@ -3,131 +3,132 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>🤖 Alfa AI Full Features</title>
+<title>🤖 Alfa AI Advanced Chat</title>
+<script src="https://cdn.tailwindcss.com"></script>
 <style>
-body, html{margin:0;padding:0;height:100%;width:100%;font-family:Arial,sans-serif;background:#f0f2f5;}
-#chatButton{position:fixed;bottom:20px;right:20px;padding:15px 25px;background:#007bff;color:white;border:none;border-radius:25px;cursor:pointer;box-shadow:0 4px 8px rgba(0,0,0,0.2);z-index:9999;}
-#chatContainer{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:white;z-index:10000;flex-direction:column;resize:both;overflow:auto;box-shadow:0 4px 12px rgba(0,0,0,0.2);}
-#chatHeader{background:#007bff;color:white;padding:15px;display:flex;justify-content:space-between;align-items:center;cursor:move;}
-#chatMessages{flex:1;padding:15px;overflow-y:auto;background:#f8f9fa;}
-.message{margin-bottom:10px;padding:10px 15px;border-radius:20px;max-width:80%;word-wrap:break-word;position:relative;}
+body, html{margin:0;padding:0;height:100%;width:100%;background:#f0f2f5;font-family:sans-serif;}
+#chatButton{position:fixed;bottom:20px;right:20px;padding:15px 25px;border-radius:25px;background:#007bff;color:white;border:none;cursor:pointer;box-shadow:0 4px 8px rgba(0,0,0,0.1);transition:transform 0.3s;}
+#chatButton:hover{transform:scale(1.1);}
+#chatContainer{display:none;position:fixed;top:10%;left:10%;width:80%;height:80%;background:white;border-radius:12px;box-shadow:0 8px 20px rgba(0,0,0,0.3);flex-direction:column;z-index:9999;overflow:hidden;resize:both;}
+#chatHeader{background:#007bff;color:white;padding:12px;display:flex;justify-content:space-between;align-items:center;cursor:move;}
+#chatMessages{flex:1;overflow-y:auto;padding:12px;background:#f8f9fa;}
+.message{max-width:70%;padding:10px 15px;margin-bottom:8px;border-radius:20px;word-wrap:break-word;animation:fadeIn 0.3s;white-space:pre-wrap;}
 .user-message{background:#007bff;color:white;margin-left:auto;}
 .bot-message{background:#e9ecef;color:black;margin-right:auto;}
-.codeBlock{background:#1e1e1e;color:#dcdcdc;padding:8px 12px;border-radius:8px;font-family:monospace;overflow-x:auto;}
+#inputGroup{display:flex;padding:12px;gap:8px;border-top:1px solid #dee2e6;background:white;}
+#userInput{flex:1;padding:10px;border-radius:20px;border:1px solid #dee2e6;outline:none;}
+#sendBtn{padding:10px 20px;border-radius:20px;background:#007bff;color:white;border:none;cursor:pointer;}
+.typingDots span{animation: blink 1.4s infinite; display:inline-block;}
+.typingDots span:nth-child(2){animation-delay:0.2s;}
+.typingDots span:nth-child(3){animation-delay:0.4s;}
+@keyframes blink{0%,80%,100%{opacity:0;}40%{opacity:1;}}
+.codeBlock{background:#1e1e1e;color:#dcdcdc;padding:8px 12px;border-radius:8px;font-family:monospace;overflow-x:auto;margin:5px 0;}
 img.chat-img{max-width:100%;border-radius:8px;margin:5px 0;}
 .buttonReply{margin:2px 2px;padding:4px 8px;background:#2563eb;color:white;border-radius:6px;cursor:pointer;display:inline-block;}
 .buttonReply:hover{background:#1e40af;}
-#inputGroup{padding:15px;background:#fff;display:flex;gap:10px;border-top:1px solid #dee2e6;}
-#userInput{flex:1;padding:10px;border:1px solid #dee2e6;border-radius:20px;outline:none;}
-#sendBtn{padding:10px 20px;background:#007bff;color:white;border:none;border-radius:20px;cursor:pointer;}
-#videoCallBtn{padding:10px 20px;background:#10b981;color:white;border:none;border-radius:20px;cursor:pointer;margin-left:5px;}
-.messageActions{position:absolute;top:5px;right:10px;display:flex;gap:5px;}
-.messageActions span{cursor:pointer;font-size:0.9em;}
+.dark-mode{background:#1a1a1a;color:white;}
+.dark-mode #chatMessages{background:#121212;}
+.dark-mode .bot-message{background:#2a2a2a;color:white;}
+.dark-mode #inputGroup{background:#1a1a1a;}
 </style>
 </head>
 <body>
 
-<button id="chatButton" onclick="toggleChat()">Chat</button>
+<button id="chatButton">Chat</button>
 
 <div id="chatContainer" class="flex flex-col">
   <div id="chatHeader">
-    <span>🤖 Alfa AI Full Features</span>
+    <span>🤖 Alfa AI</span>
     <div>
+      <button id="darkModeToggle">🌓</button>
       <button onclick="toggleChat()">×</button>
-      <button id="videoCallBtn" onclick="startVideoCall()">📹 Video</button>
     </div>
   </div>
   <div id="chatMessages"></div>
   <div id="inputGroup">
-    <input type="text" id="userInput" placeholder="Type your message..." />
+    <input type="text" id="userInput" placeholder="Type your message..."/>
     <button onclick="startVoice()">🎤</button>
     <button id="sendBtn" onclick="sendMessage()">Send</button>
-    <button onclick="exportChat()">💾 Export</button>
-    <input type="file" id="fileUpload" style="display:none;" onchange="uploadFile(event)"/>
-    <button onclick="document.getElementById('fileUpload').click()">📁 Upload</button>
   </div>
 </div>
 
 <script>
-// Toggle Chat
+const chatButton=document.getElementById('chatButton');
+const chatContainer=document.getElementById('chatContainer');
+const chatMessages=document.getElementById('chatMessages');
+const userInput=document.getElementById('userInput');
+const darkModeToggle=document.getElementById('darkModeToggle');
+
+// Chat history
+let chatHistory=JSON.parse(localStorage.getItem('chatHistory')||'[]');
+chatHistory.forEach(msg=>appendMessage(msg.text,msg.isUser,false));
+
 function toggleChat(){
-  const container=document.getElementById('chatContainer');
-  const button=document.getElementById('chatButton');
-  if(container.style.display==='flex'){container.style.display='none';button.style.display='block';}
-  else{container.style.display='flex';button.style.display='none';document.getElementById('userInput').focus();}
+  const isHidden=chatContainer.style.display==='none'||chatContainer.style.display==='';
+  chatContainer.style.display=isHidden?'flex':'none';
+  chatButton.style.display=isHidden?'none':'block';
+  if(isHidden) userInput.focus();
 }
 
-// Append message
-function appendMessage(text,isUser){
-  const chatMessages=document.getElementById('chatMessages');
+darkModeToggle.addEventListener('click',()=>document.body.classList.toggle('dark-mode'));
+
+function detectLanguage(text){const hindi=/[\u0900-\u097F]/;return hindi.test(text)?'hi-IN':'en-US';}
+
+function appendMessage(text,isUser,save=true){
   const div=document.createElement('div'); div.className='message '+(isUser?'user-message':'bot-message');
   const codeRegex=/```([\s\S]*?)```/g;
   text=text.replace(codeRegex,(m,p1)=>`<div class="codeBlock">${p1}</div>`);
-  const imgRegex=/!\[.*?\]\((.*?)\)/g;
-  text=text.replace(imgRegex,(m,p1)=>`<img src="${p1}" class="chat-img" />`);
-  const buttonRegex=/::button::(.*?)::\/button::/g;
-  text=text.replace(buttonRegex,(m,p1)=>`<span class="buttonReply" onclick="sendQuickReply('${p1}')">${p1}</span>`);
+  const linkRegex=/https?:\/\/[^\s]+/g; text=text.replace(linkRegex,match=>`<a href="${match}" target="_blank">${match}</a>`);
+  const imgRegex=/!\[.*?\]\((.*?)\)/g; text=text.replace(imgRegex,(m,p1)=>`<img src="${p1}" class="chat-img"/>`);
+  const buttonRegex=/::button::(.*?)::\/button::/g; text=text.replace(buttonRegex,(m,p1)=>`<span class="buttonReply" onclick="sendQuickReply('${p1}')">${p1}</span>`);
   div.innerHTML=text;
-
-  // Message actions (edit/delete/like)
-  const actions=document.createElement('div'); actions.className='messageActions';
-  if(isUser){
-    const edit=document.createElement('span'); edit.textContent='✏️'; edit.onclick=()=>editMessage(div); actions.appendChild(edit);
-    const del=document.createElement('span'); del.textContent='🗑️'; del.onclick=()=>deleteMessage(div); actions.appendChild(del);
-  }
-  const like=document.createElement('span'); like.textContent='👍'; like.onclick=()=>likeMessage(div); actions.appendChild(like);
-  div.appendChild(actions);
-
-  chatMessages.appendChild(div); chatMessages.scrollTop=chatMessages.scrollHeight;
-
-  // Save history
-  let chatHistory=JSON.parse(localStorage.getItem('chatHistory')||'[]');
-  chatHistory.push({text,isUser}); localStorage.setItem('chatHistory',JSON.stringify(chatHistory));
+  chatMessages.appendChild(div);
+  chatMessages.scrollTop=chatMessages.scrollHeight;
+  if(save){chatHistory.push({text,isUser}); localStorage.setItem('chatHistory',JSON.stringify(chatHistory));}
+  if(!isUser) playVoice(text);
 }
 
-// Send message
+function sendQuickReply(text){userInput.value=text; sendMessage();}
+
 async function sendMessage(){
-  const input=document.getElementById('userInput'); let msg=input.value.trim();
-  if(!msg) return; appendMessage(msg,true); input.value='';
-  const typingDiv=document.createElement('div'); typingDiv.className='bot-message'; typingDiv.textContent='Typing...'; document.getElementById('chatMessages').appendChild(typingDiv);
-  document.getElementById('chatMessages').scrollTop=document.getElementById('chatMessages').scrollHeight;
+  const msg=userInput.value.trim(); if(!msg) return;
+  appendMessage(msg,true); userInput.value='';
+  const typingDiv=document.createElement('div'); typingDiv.className='message bot-message'; typingDiv.innerHTML='<span class="typingDots"><span>.</span><span>.</span><span>.</span></span>';
+  chatMessages.appendChild(typingDiv); chatMessages.scrollTop=chatMessages.scrollHeight;
   try{
-    const res=await fetch('/api/alfa',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:msg})});
-    const data=await res.json(); typingDiv.remove();
-    if(data.reply) appendMessage(data.reply,false);
-    else appendMessage('⚠️ Something went wrong',false);
-  }catch(err){typingDiv.remove(); appendMessage('⚠️ Network error',false);}
+    const res=await fetch('/api/alfa',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:msg,lang:detectLanguage(msg)})});
+    const data=await res.json();
+    typingDiv.remove();
+    appendMessage(data.reply,false);
+  }catch(err){typingDiv.remove();appendMessage('⚠️ Network error',false);}
 }
 
-// Quick reply
-function sendQuickReply(text){document.getElementById('userInput').value=text; sendMessage();}
+userInput.addEventListener('keypress',e=>{if(e.key==='Enter') sendMessage();});
 
-// Voice input
 function startVoice(){
   const recognition=new (window.SpeechRecognition||window.webkitSpeechRecognition)();
-  recognition.lang='en-US';
-  recognition.onresult=function(event){document.getElementById('userInput').value=event.results[0][0].transcript; sendMessage();}
-  recognition.start();
+  recognition.lang='hi-IN'; recognition.interimResults=false; recognition.maxAlternatives=1; recognition.start();
+  recognition.onresult=(e)=>{userInput.value=e.results[0][0].transcript; sendMessage();}
+  recognition.onerror=(e)=>alert('Voice error: '+e.error);
 }
 
-// Video Call placeholder
-function startVideoCall(){alert("Video call placeholder. Integrate WebRTC or your service here.");}
+function playVoice(text){
+  const lang=detectLanguage(text);
+  const utter=new SpeechSynthesisUtterance(text); utter.lang=lang; speechSynthesis.speak(utter);
+}
 
-// Edit / Delete / Like
-function editMessage(div){let newText=prompt("Edit your message:",div.childNodes[0].textContent); if(newText) div.childNodes[0].textContent=newText;}
-function deleteMessage(div){div.remove();}
-function likeMessage(div){alert("You liked this message!");}
-
-// File Upload
-function uploadFile(event){const file=event.target.files[0];if(file){appendMessage('Uploaded file: '+file.name,true);}}
-
-// Export chat
-function exportChat(){let chatHistory=localStorage.getItem('chatHistory')||'[]';let blob=new Blob([chatHistory],{type:'text/plain'});let a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='chat.txt';a.click();}
-
-// Load history
-let chatHistory=JSON.parse(localStorage.getItem('chatHistory')||'[]');
-chatHistory.forEach(msg=>appendMessage(msg.text,msg.isUser));
-
+// Drag functionality
+const header=document.getElementById('chatHeader');
+header.onmousedown=function(e){
+  e.preventDefault();
+  let shiftX=e.clientX-chatContainer.getBoundingClientRect().left;
+  let shiftY=e.clientY-chatContainer.getBoundingClientRect().top;
+  function moveAt(pageX,pageY){chatContainer.style.left=pageX-shiftX+'px'; chatContainer.style.top=pageY-shiftY+'px';}
+  function onMouseMove(e){moveAt(e.pageX,e.pageY);}
+  document.addEventListener('mousemove',onMouseMove);
+  document.onmouseup=function(){document.removeEventListener('mousemove',onMouseMove); document.onmouseup=null;}
+};
+header.ondragstart=function(){return false;}
 </script>
 
 </body>
