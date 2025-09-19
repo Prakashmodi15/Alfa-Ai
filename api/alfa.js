@@ -21,7 +21,8 @@ export default async function handler(req, res) {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "deepseek/deepseek-chat:free", // 👈 DeepSeek free model slug
+        // 👇 Yahan sahi model slug daalna zaruri hai
+        model: "deepseek/deepseek-chat", 
         messages: [{ role: "user", content: message }],
       }),
     });
