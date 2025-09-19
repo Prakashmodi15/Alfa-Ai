@@ -17,26 +17,32 @@ export default async function handler(req, res) {
     const r = await fetch("https://openrouter.ai/api/v1/chat/completions", {
       method: "POST",
       headers: {
-        "Content-Type": "application/json",
         "Authorization": `Bearer ${process.env.OPENROUTER_API_KEY}`,
-        "HTTP-Referer": "https://your-domain.com",
-        "X-Title": "Alfa AI"
+        "HTTP-Referer": req.headers.host || "http://localhost:3000",
+        "X-Title": "Alfa AI",
+        "Content-Type": "application/json",
       },
       body: JSON.stringify({
         model: "deepseek/deepseek-chat:free",
-        messages: [{ role: "user", content: prompt }]
-      })
+        messages: [
+          {
+            role: "user",
+            content: prompt,
+          },
+        ],
+      }),
     });
 
     const data = await r.json();
 
     if (!r.ok) {
-      return res.status(r.status).json({ error: data.error?.message || "API error" });
+      return res
+        .status(r.status)
+        .json({ error: data.error?.message || "OpenRouter API error" });
     }
 
     const reply = data.choices?.[0]?.message?.content || "No reply";
     res.status(200).json({ reply });
-
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
