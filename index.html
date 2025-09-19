@@ -2,77 +2,79 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Jarvis AI</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Alfa AI</title>
   <style>
     body {
       font-family: Arial, sans-serif;
       background: #ffffff;
-      color: #333333;
+      margin: 0;
+      padding: 0;
       display: flex;
       flex-direction: column;
-      align-items: center;
-      padding: 20px;
+      height: 100vh;
     }
-    h1 {
-      color: #0077cc;
+    header {
+      background: #2563eb;
+      color: white;
+      padding: 15px;
+      text-align: center;
+      font-size: 20px;
+      font-weight: bold;
     }
     #chat {
-      width: 100%;
-      max-width: 600px;
-      background: #f5f5f5;
-      border: 1px solid #cccccc;
-      border-radius: 8px;
-      padding: 15px;
+      flex: 1;
       overflow-y: auto;
-      height: 400px;
-      margin-bottom: 10px;
+      padding: 15px;
+      border-bottom: 1px solid #ddd;
     }
     .msg {
-      margin: 5px 0;
-      padding: 8px 12px;
-      border-radius: 6px;
-      line-height: 1.4;
-      max-width: 80%;
+      margin: 10px 0;
+      padding: 10px;
+      border-radius: 8px;
+      max-width: 70%;
       word-wrap: break-word;
     }
     .user {
-      background: #d1e7dd;
+      background: #dbeafe;
       align-self: flex-end;
+      margin-left: auto;
     }
-    .jarvis {
-      background: #e2e3e5;
+    .bot {
+      background: #f3f4f6;
       align-self: flex-start;
+      margin-right: auto;
     }
     #input-area {
-      width: 100%;
-      max-width: 600px;
       display: flex;
-      gap: 10px;
+      padding: 10px;
+      border-top: 1px solid #ddd;
+      background: #f9fafb;
     }
-    input {
+    #prompt {
       flex: 1;
       padding: 10px;
+      font-size: 16px;
+      border: 1px solid #ccc;
       border-radius: 6px;
-      border: 1px solid #cccccc;
-      background: #ffffff;
-      color: #333333;
     }
     button {
-      padding: 10px 16px;
+      margin-left: 10px;
+      padding: 10px 15px;
+      background: #2563eb;
+      color: white;
       border: none;
       border-radius: 6px;
-      background: #0077cc;
-      color: white;
       cursor: pointer;
+      font-size: 16px;
     }
     button:hover {
-      background: #005fa3;
+      background: #1e40af;
     }
   </style>
 </head>
 <body>
-  <h1>Jarvis AI</h1>
+  <header>🤖 Alfa AI</header>
   <div id="chat"></div>
   <div id="input-area">
     <input id="prompt" type="text" placeholder="Type your message..." />
@@ -81,22 +83,22 @@
 
   <script>
     const chat = document.getElementById("chat");
-    const input = document.getElementById("prompt");
+    const promptInput = document.getElementById("prompt");
 
-    function addMessage(text, sender) {
-      const div = document.createElement("div");
-      div.className = "msg " + sender;
-      div.textContent = text;
-      chat.appendChild(div);
+    function appendMessage(text, sender) {
+      const msg = document.createElement("div");
+      msg.classList.add("msg", sender);
+      msg.innerText = text;
+      chat.appendChild(msg);
       chat.scrollTop = chat.scrollHeight;
     }
 
     async function sendMessage() {
-      const prompt = input.value.trim();
+      const prompt = promptInput.value.trim();
       if (!prompt) return;
 
-      addMessage("You: " + prompt, "user");
-      input.value = "";
+      appendMessage("You: " + prompt, "user");
+      promptInput.value = "";
 
       try {
         const res = await fetch("/api/alfa", {
@@ -107,16 +109,17 @@
 
         const data = await res.json();
         if (data.reply) {
-          addMessage("Jarvis: " + data.reply, "jarvis");
-        } else if (data.error) {
-          addMessage("⚠️ Error: " + data.error, "jarvis");
+          appendMessage("Alfa AI: " + data.reply, "bot");
+        } else {
+          appendMessage("⚠️ Error: " + (data.error || "No reply"), "bot");
         }
       } catch (err) {
-        addMessage("⚠️ Network error: " + err.message, "jarvis");
+        appendMessage("⚠️ Network error: " + err.message, "bot");
       }
     }
 
-    input.addEventListener("keypress", (e) => {
+    // Send on Enter
+    promptInput.addEventListener("keypress", (e) => {
       if (e.key === "Enter") sendMessage();
     });
   </script>
