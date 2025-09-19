@@ -71,7 +71,7 @@ darkModeToggle.addEventListener('click',()=>{document.body.classList.toggle('dar
 // Detect language
 function detectLanguage(text){const hindi=/[\u0900-\u097F]/;return hindi.test(text)?'hi-IN':'en-US';}
 
-// Append user/bot message with markdown/code
+// Append user/bot message
 function appendMessage(text,isUser){
   const div=document.createElement('div'); div.className='flex items-start '+(isUser?'justify-end':'justify-start');
   const avatar=document.createElement('span'); avatar.className='avatar'; avatar.textContent=isUser?'🧑':'🤖';
@@ -91,13 +91,41 @@ function appendMessage(text,isUser){
   const now=new Date(); timeSpan.textContent=`${now.getHours()}:${now.getMinutes().toString().padStart(2,'0')}`;
   msgDiv.appendChild(timeSpan);
 
-  if(isUser){div.appendChild(msgDiv); div.appendChild(avatar);} else{div.appendChild(avatar); div.appendChild(msgDiv);}
+  if(isUser){div.appendChild(msgDiv); div.appendChild(avatar);} 
+  else{div.appendChild(avatar); div.appendChild(msgDiv);}
   chatMessages.appendChild(div);
   chatMessages.scrollTop=chatMessages.scrollHeight;
-  if(!isUser) playVoice(text);
+
+  if(!isUser) progressiveVoice(msgDiv,text);
 }
 
-// Typing animation
+// Typing animation + voice together
+async function progressiveVoice(container, text){
+  container.innerHTML='';
+  let i=0;
+
+  // Clean text for TTS
+  const voiceText = text.replace(/```[\s\S]*?```/g,'')
+                        .replace(/!\[.*?\]\(.*?\)/g,'')
+                        .replace(/https?:\/\/[^\s]+/g,'')
+                        .replace(/[\u{1F300}-\u{1FAFF}]/gu,'')
+                        .trim();
+
+  // Start TTS
+  const utter = new SpeechSynthesisUtterance(voiceText);
+  utter.lang = detectLanguage(text);
+  speechSynthesis.speak(utter);
+
+  // Progressive typing
+  while(i<text.length){
+    container.innerHTML += text[i];
+    chatMessages.scrollTop=chatMessages.scrollHeight;
+    await new Promise(r=>setTimeout(r,25));
+    i++;
+  }
+}
+
+// Typing placeholder
 function appendTyping(){
   const div=document.createElement('div'); div.className='flex items-start mr-auto';
   const avatar=document.createElement('span'); avatar.className='avatar mr-2'; avatar.textContent='🤖';
@@ -108,36 +136,24 @@ function appendTyping(){
   return {div,msgDiv,dots};
 }
 
-// Progressive typing for multi-line
-async function progressiveText(container,text){
-  container.innerHTML='';
-  let i=0;
-  while(i<text.length){
-    container.innerHTML+=text[i];
-    chatMessages.scrollTop=chatMessages.scrollHeight;
-    await new Promise(r=>setTimeout(r,25));
-    i++;
-  }
-}
-
 // Send message
 async function sendMessage(){
   const msg=userInput.value.trim(); if(!msg) return;
   appendMessage(msg,true); userInput.value='';
+
   const typingObj=appendTyping();
+
   try{
     const res=await fetch('/api/alfa',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:msg,lang:detectLanguage(msg)})});
     const data=await res.json();
     typingObj.div.remove();
-    if(data.reply){
-      const div=document.createElement('div'); div.className='flex items-start mr-auto';
-      const avatar=document.createElement('span'); avatar.className='avatar mr-2'; avatar.textContent='🤖';
-      const msgDiv=document.createElement('div'); msgDiv.className='message bg-gray-200 text-black dark:bg-gray-700 dark:text-white';
-      div.appendChild(avatar); div.appendChild(msgDiv); chatMessages.appendChild(div); chatMessages.scrollTop=chatMessages.scrollHeight;
-      await progressiveText(msgDiv,data.reply);
-      playVoice(data.reply);
-    }else appendMessage('⚠️ Something went wrong',false);
-  }catch(err){typingObj.div.remove(); appendMessage('⚠️ Network error',false);}
+
+    if(data.reply) appendMessage(data.reply,false);
+    else appendMessage('⚠️ Something went wrong',false);
+
+  }catch(err){
+    typingObj.div.remove(); appendMessage('⚠️ Network error',false);
+  }
 }
 
 // Enter key
@@ -149,12 +165,6 @@ function startVoice(){
   recognition.lang='hi-IN'; recognition.interimResults=false; recognition.maxAlternatives=1; recognition.start();
   recognition.onresult=(event)=>{userInput.value=event.results[0][0].transcript; sendMessage();}
   recognition.onerror=(event)=>{alert('Voice recognition error: '+event.error);}
-}
-
-// Voice output
-function playVoice(text){
-  const lang=detectLanguage(text);
-  const utter=new SpeechSynthesisUtterance(text); utter.lang=lang; utter.rate=1; utter.pitch=1; speechSynthesis.speak(utter);
 }
 </script>
 </body>
