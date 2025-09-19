@@ -122,9 +122,6 @@
     </div>
 
     <script>
-        const OPENROUTER_API_KEY = "Your_API_Key";
-        const OPENROUTER_API_URL = "https://openrouter.ai/api/v1/chat/completions";
-
         function toggleChat() {
             const container = document.getElementById('chatContainer');
             const button = document.getElementById('chatButton');
@@ -151,35 +148,24 @@
             userInput.value = '';
 
             try {
-                const response = await fetch(OPENROUTER_API_URL, {
+                const response = await fetch("/api/alfa", {
                     method: "POST",
-                    headers: {
-                        "Authorization": `Bearer ${OPENROUTER_API_KEY}`,
-                        "HTTP-Referer": window.location.href,
-                        "X-Title": "Alfa AI",
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify({
-                        "model": "deepseek/deepseek-chat:free",
-                        "messages": [
-                            {
-                                "role": "user",
-                                "content": message
-                            }
-                        ]
-                    })
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ prompt: message })
                 });
 
                 const data = await response.json();
-                const botResponse = data.choices[0].message.content;
-                appendMessage(botResponse, false);
+                if (data.reply) {
+                    appendMessage(data.reply, false);
+                } else {
+                    appendMessage("⚠️ Error: " + (data.error || "Unknown error"), false);
+                }
             } catch (error) {
-                console.error("Error fetching response from OpenRouter API:", error);
-                appendMessage("Sorry, I encountered an error. Please try again.", false);
+                console.error("Error fetching response:", error);
+                appendMessage("⚠️ Failed to connect server.", false);
             }
         }
 
-        // Allow Enter key to send message
         document.getElementById('userInput').addEventListener('keypress', (e) => {
             if (e.key === 'Enter') sendMessage();
         });
