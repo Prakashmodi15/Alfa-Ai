@@ -1,6 +1,6 @@
-here// voice.js
+// voice.js
 
-// Language detect
+// Detect language for TTS
 function detectLanguage(text){ 
   const hindi=/[\u0900-\u097F]/;
   return hindi.test(text)?'hi-IN':'en-US';
@@ -11,7 +11,7 @@ async function progressiveVoice(container, text){
   container.innerHTML='';
   let i=0;
 
-  // Clean text for TTS
+  // Clean text for TTS: remove code, links, emojis
   let voiceText = text
     .replace(/```[\s\S]*?```/g,'')       
     .replace(/!\[.*?\]\(.*?\)/g,'')      
@@ -30,7 +30,7 @@ async function progressiveVoice(container, text){
   utter.lang = detectLanguage(text); 
   speechSynthesis.speak(utter);
 
-  // Typing animation (original text show)
+  // Typing animation
   while(i<text.length){
     container.innerHTML += text[i];
     container.scrollTop=container.scrollHeight;
