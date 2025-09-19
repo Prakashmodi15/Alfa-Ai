@@ -4,8 +4,8 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: "Only POST allowed" });
   }
 
-  if (!process.env.OPENAI_API_KEY) {
-    return res.status(500).json({ error: "OpenAI API key not configured" });
+  if (!process.env.OPENROUTER_API_KEY) {
+    return res.status(500).json({ error: "API key not configured" });
   }
 
   const { prompt } = req.body;
@@ -14,28 +14,29 @@ export default async function handler(req, res) {
   }
 
   try {
-    const r = await fetch("https://api.openai.com/v1/chat/completions", {
+    const r = await fetch("https://openrouter.ai/api/v1/chat/completions", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${process.env.OPENAI_API_KEY}`
+        "Authorization": `Bearer ${process.env.OPENROUTER_API_KEY}`,
+        "HTTP-Referer": "https://your-domain.com",
+        "X-Title": "Alfa AI"
       },
       body: JSON.stringify({
-        model: "gpt-4o-mini",
-        messages: [{ role: "user", content: prompt }],
-        max_tokens: 500
+        model: "deepseek/deepseek-chat:free",
+        messages: [{ role: "user", content: prompt }]
       })
     });
 
+    const data = await r.json();
+
     if (!r.ok) {
-      const errData = await r.json();
-      return res.status(r.status).json({ error: errData.error?.message || "OpenAI API error" });
+      return res.status(r.status).json({ error: data.error?.message || "API error" });
     }
 
-    const data = await r.json();
     const reply = data.choices?.[0]?.message?.content || "No reply";
-
     res.status(200).json({ reply });
+
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
