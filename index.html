@@ -104,19 +104,18 @@ async function progressiveVoice(container, text){
   container.innerHTML='';
   let i=0;
 
-  // Clean text for TTS
-  const voiceText = text.replace(/```[\s\S]*?```/g,'')
-                        .replace(/!\[.*?\]\(.*?\)/g,'')
-                        .replace(/https?:\/\/[^\s]+/g,'')
-                        .replace(/[\u{1F300}-\u{1FAFF}]/gu,'')
-                        .trim();
+  // Clean text for TTS (code, links, emojis removed, punctuation kept)
+  const voiceText = text
+    .replace(/```[\s\S]*?```/g,'')
+    .replace(/!\[.*?\]\(.*?\)/g,'')
+    .replace(/https?:\/\/[^\s]+/g,'')
+    .replace(/[^\w\s.,:;!?()\-\n\u0900-\u097F]/g,'') // Hindi + English + punctuation
+    .trim();
 
-  // Start TTS
   const utter = new SpeechSynthesisUtterance(voiceText);
-  utter.lang = detectLanguage(text);
+  utter.lang = detectLanguage(text); 
   speechSynthesis.speak(utter);
 
-  // Progressive typing
   while(i<text.length){
     container.innerHTML += text[i];
     chatMessages.scrollTop=chatMessages.scrollHeight;
@@ -162,7 +161,8 @@ userInput.addEventListener('keypress',e=>{if(e.key==='Enter') sendMessage();});
 // Voice input
 function startVoice(){
   const recognition=new (window.SpeechRecognition||window.webkitSpeechRecognition)();
-  recognition.lang='hi-IN'; recognition.interimResults=false; recognition.maxAlternatives=1; recognition.start();
+  recognition.lang='hi-IN'; // Optional: Auto detect can be implemented later
+  recognition.interimResults=false; recognition.maxAlternatives=1; recognition.start();
   recognition.onresult=(event)=>{userInput.value=event.results[0][0].transcript; sendMessage();}
   recognition.onerror=(event)=>{alert('Voice recognition error: '+event.error);}
 }
