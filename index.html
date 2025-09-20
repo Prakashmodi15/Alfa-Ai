@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="hi">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -25,31 +25,119 @@ a{color:#2563eb;text-decoration:underline;}
 <body class="transition-colors duration-500">
 
 <!-- Floating Chat Button -->
-<button id="chatButton" class="fixed bottom-5 right-5 bg-blue-600 text-white px-6 py-3 rounded-full shadow-lg z-50" onclick="toggleChat()">Chat</button>
+<button id="chatButton" class="fixed bottom-5 right-5 bg-blue-600 text-white px-6 py-3 rounded-full shadow-lg z-50">Chat</button>
 
 <!-- Chat Container -->
 <div id="chatContainer" class="flex flex-col bg-white dark:bg-gray-800 transition-colors duration-500">
-  <!-- Header -->
   <div class="flex justify-between items-center bg-blue-600 text-white p-4">
     <span class="font-bold">🤖 Alfa AI</span>
     <div class="flex items-center gap-2">
       <button id="darkModeToggle" class="text-white hover:text-gray-200">🌓</button>
-      <button onclick="toggleChat()" class="text-2xl font-bold hover:text-gray-200">×</button>
+      <button id="closeChat" class="text-2xl font-bold hover:text-gray-200">×</button>
     </div>
   </div>
-
-  <!-- Messages -->
   <div id="chatMessages" class="flex-1 p-4 overflow-y-auto bg-gray-100 dark:bg-gray-900 transition-colors duration-500"></div>
-
-  <!-- Input -->
   <div class="flex p-4 gap-2 border-t border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 transition-colors duration-500">
     <input type="text" id="userInput" placeholder="Type your message or speak..." class="flex-1 border rounded-full px-4 py-2 outline-none focus:ring-2 focus:ring-blue-400 dark:bg-gray-700 dark:text-white"/>
-    <button onclick="startVoiceBtn()" class="px-4 py-2 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition">🎤</button>
-    <button onclick="sendMessage()" class="px-4 py-2 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition">Send</button>
+    <button id="voiceBtn" class="px-4 py-2 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition">🎤</button>
+    <button id="sendBtn" class="px-4 py-2 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition">Send</button>
   </div>
 </div>
 
-<!-- Modular JS -->
-<script type="module" src="main.js"></script>
+<script>
+const chatContainer = document.getElementById('chatContainer');
+const chatButton = document.getElementById('chatButton');
+const closeChat = document.getElementById('closeChat');
+const chatMessages = document.getElementById('chatMessages');
+const userInput = document.getElementById('userInput');
+const darkModeToggle = document.getElementById('darkModeToggle');
+const sendBtn = document.getElementById('sendBtn');
+const voiceBtn = document.getElementById('voiceBtn');
+
+let currentUtterance = null;
+
+// Toggle chat
+chatButton.addEventListener('click',()=>{chatContainer.style.display='flex'; chatButton.style.display='none'; userInput.focus();});
+closeChat.addEventListener('click',()=>{chatContainer.style.display='none'; chatButton.style.display='block';});
+
+// Dark mode
+darkModeToggle.addEventListener('click',()=>{document.body.classList.toggle('dark');});
+
+// Filter unwanted characters (emoji/truncate)
+function cleanText(text){return text.replace(/[\u{1F600}-\u{1F6FF}\u{2700}-\u{27BF}]/gu,'');}
+
+// Append message
+function appendMessage(text,isUser=false){
+  const div=document.createElement('div');
+  div.className='flex items-start '+(isUser?'justify-end':'justify-start');
+  const avatar=document.createElement('span');
+  avatar.className='avatar'; avatar.textContent=isUser?'🧑':'🤖';
+  const msgDiv=document.createElement('div');
+  msgDiv.className='message '+(isUser?'bg-blue-600 text-white':'bg-gray-200 text-black dark:bg-gray-700 dark:text-white');
+  text=cleanText(text);
+
+  // Code block
+  text=text.replace(/```([\s\S]*?)```/g,(m,p1)=>`<div class="codeBlock">${p1}</div>`);
+  // Links
+  text=text.replace(/https?:\/\/[^\s]+/g,m=>`<a href="${m}" target="_blank">${m}</a>`);
+
+  msgDiv.innerHTML=text;
+  const timeSpan=document.createElement('span'); timeSpan.className='timestamp';
+  const now=new Date(); timeSpan.textContent=`${now.getHours()}:${now.getMinutes().toString().padStart(2,'0')}`;
+  msgDiv.appendChild(timeSpan);
+
+  if(isUser){div.appendChild(msgDiv); div.appendChild(avatar);}else{div.appendChild(avatar); div.appendChild(msgDiv);}
+  chatMessages.appendChild(div); chatMessages.scrollTop=chatMessages.scrollHeight;
+
+  if(!isUser) speakLive(text);
+}
+
+// Live TTS
+function speakLive(text){
+  if(currentUtterance) speechSynthesis.cancel();
+  currentUtterance = new SpeechSynthesisUtterance(text);
+  currentUtterance.rate=1;
+  currentUtterance.onend=()=>{currentUtterance=null;}
+  speechSynthesis.speak(currentUtterance);
+}
+
+// Detect language (hi/en)
+function detectLanguage(msg){return /[\u0900-\u097F]/.test(msg)?'hi':'en';}
+
+// Send message
+async function sendMessage(){
+  const msg=userInput.value.trim(); if(!msg) return;
+  appendMessage(msg,true); userInput.value='';
+  const typingDiv=document.createElement('div');
+  typingDiv.className='flex items-start mr-auto';
+  const avatar=document.createElement('span'); avatar.className='avatar mr-2'; avatar.textContent='🤖';
+  const msgDiv=document.createElement('div'); msgDiv.className='message bg-gray-200 text-black dark:bg-gray-700 dark:text-white';
+  const dots=document.createElement('span'); dots.className='typingDots'; dots.innerHTML='<span>.</span><span>.</span><span>.</span>';
+  msgDiv.appendChild(dots); typingDiv.appendChild(avatar); typingDiv.appendChild(msgDiv);
+  chatMessages.appendChild(typingDiv); chatMessages.scrollTop=chatMessages.scrollHeight;
+
+  try{
+    const res=await fetch('/api/alfa',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:msg,lang:detectLanguage(msg)})});
+    const data=await res.json();
+    typingDiv.remove();
+    if(data.reply) appendMessage(data.reply,false);
+    else appendMessage('⚠️ Something went wrong',false);
+  }catch(e){typingDiv.remove(); appendMessage('⚠️ Network error',false);}
+}
+
+// Enter key
+userInput.addEventListener('keypress',e=>{if(e.key==='Enter') sendMessage();});
+sendBtn.addEventListener('click',sendMessage);
+
+// Voice input
+voiceBtn.addEventListener('click',()=>{
+  const recognition=new (window.SpeechRecognition||window.webkitSpeechRecognition)();
+  recognition.lang='hi-IN'; recognition.interimResults=false; recognition.maxAlternatives=1;
+  recognition.start();
+  recognition.onresult=e=>{userInput.value=e.results[0][0].transcript; sendMessage();}
+  recognition.onerror=e=>{alert('Voice recognition error: '+e.error);}
+});
+</script>
+
 </body>
 </html>
