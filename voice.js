@@ -1,40 +1,18 @@
 // voice.js
+export function startVoice(onResult) {
+  const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+  recognition.lang = 'hi-IN';
+  recognition.interimResults = false;
+  recognition.maxAlternatives = 1;
 
-// Detect language for TTS
-function detectLanguage(text){ 
-  const hindi=/[\u0900-\u097F]/;
-  return hindi.test(text)?'hi-IN':'en-US';
-}
+  recognition.start();
 
-// Progressive typing + voice
-async function progressiveVoice(container, text){
-  container.innerHTML='';
-  let i=0;
+  recognition.onresult = (event) => {
+    const transcript = event.results[0][0].transcript;
+    onResult(transcript);
+  }
 
-  // Clean text for TTS: remove code, links, emojis
-  let voiceText = text
-    .replace(/```[\s\S]*?```/g,'')       
-    .replace(/!\[.*?\]\(.*?\)/g,'')      
-    .replace(/https?:\/\/[^\s]+/g,'')    
-    .replace(/[\u{1F600}-\u{1F64F}]/gu,'') 
-    .replace(/[\u{1F300}-\u{1F5FF}]/gu,'') 
-    .replace(/[\u{1F680}-\u{1F6FF}]/gu,'') 
-    .replace(/[\u{2600}-\u{26FF}]/gu,'')   
-    .replace(/[\u{2700}-\u{27BF}]/gu,'')   
-    .replace(/[^a-zA-Z0-9\u0900-\u097F\s.,:;!?()\-\n]/g,'')
-    .trim();
-
-  if(!voiceText) return;
-
-  const utter = new SpeechSynthesisUtterance(voiceText);
-  utter.lang = detectLanguage(text); 
-  speechSynthesis.speak(utter);
-
-  // Typing animation
-  while(i<text.length){
-    container.innerHTML += text[i];
-    container.scrollTop=container.scrollHeight;
-    await new Promise(r=>setTimeout(r,25));
-    i++;
+  recognition.onerror = (event) => {
+    alert('Voice recognition error: ' + event.error);
   }
 }
