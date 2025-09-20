@@ -40,9 +40,13 @@ a{color:#2563eb;text-decoration:underline;}
   <div class="flex p-4 gap-2 border-t border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 transition-colors duration-500">
     <input type="text" id="userInput" placeholder="Type your message or speak..." class="flex-1 border rounded-full px-4 py-2 outline-none focus:ring-2 focus:ring-blue-400 dark:bg-gray-700 dark:text-white"/>
     <button id="voiceBtn" class="px-4 py-2 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition">🎤</button>
+    <button id="screenBtn" class="px-4 py-2 bg-green-600 text-white rounded-full hover:bg-green-700 transition">🎥</button>
     <button id="sendBtn" class="px-4 py-2 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition">Send</button>
   </div>
 </div>
+
+<!-- Screen Share Preview -->
+<video id="screenVideo" autoplay style="display:none; position:fixed; bottom:80px; right:5px; width:200px; height:150px; border:2px solid #000; z-index:10000;"></video>
 
 <script>
 const chatContainer = document.getElementById('chatContainer');
@@ -53,8 +57,11 @@ const userInput = document.getElementById('userInput');
 const darkModeToggle = document.getElementById('darkModeToggle');
 const sendBtn = document.getElementById('sendBtn');
 const voiceBtn = document.getElementById('voiceBtn');
+const screenBtn = document.getElementById('screenBtn');
+const screenVideo = document.getElementById('screenVideo');
 
 let currentUtterance = null;
+let screenStream = null;
 
 // Toggle chat
 chatButton.addEventListener('click',()=>{chatContainer.style.display='flex'; chatButton.style.display='none'; userInput.focus();});
@@ -70,10 +77,8 @@ function cleanText(text){return text.replace(/[\u{1F600}-\u{1F6FF}\u{2700}-\u{27
 function appendMessage(text,isUser=false){
   const div=document.createElement('div');
   div.className='flex items-start '+(isUser?'justify-end':'justify-start');
-  const avatar=document.createElement('span');
-  avatar.className='avatar'; avatar.textContent=isUser?'🧑':'🤖';
-  const msgDiv=document.createElement('div');
-  msgDiv.className='message '+(isUser?'bg-blue-600 text-white':'bg-gray-200 text-black dark:bg-gray-700 dark:text-white');
+  const avatar=document.createElement('span'); avatar.className='avatar'; avatar.textContent=isUser?'🧑':'🤖';
+  const msgDiv=document.createElement('div'); msgDiv.className='message '+(isUser?'bg-blue-600 text-white':'bg-gray-200 text-black dark:bg-gray-700 dark:text-white');
   text=cleanText(text);
 
   // Code block
@@ -101,13 +106,14 @@ function speakLive(text){
   speechSynthesis.speak(currentUtterance);
 }
 
-// Detect language (hi/en)
+// Detect language
 function detectLanguage(msg){return /[\u0900-\u097F]/.test(msg)?'hi':'en';}
 
 // Send message
 async function sendMessage(){
   const msg=userInput.value.trim(); if(!msg) return;
   appendMessage(msg,true); userInput.value='';
+
   const typingDiv=document.createElement('div');
   typingDiv.className='flex items-start mr-auto';
   const avatar=document.createElement('span'); avatar.className='avatar mr-2'; avatar.textContent='🤖';
@@ -136,6 +142,25 @@ voiceBtn.addEventListener('click',()=>{
   recognition.start();
   recognition.onresult=e=>{userInput.value=e.results[0][0].transcript; sendMessage();}
   recognition.onerror=e=>{alert('Voice recognition error: '+e.error);}
+});
+
+// Screen Share
+screenBtn.addEventListener('click', async ()=>{
+  try {
+    if(!screenStream){
+      screenStream = await navigator.mediaDevices.getDisplayMedia({video:true, audio:true});
+      screenVideo.srcObject = screenStream;
+      screenVideo.style.display='block';
+      screenStream.getTracks().forEach(track => track.onended = ()=>{
+        screenVideo.style.display='none';
+        screenStream=null;
+      });
+    } else {
+      screenStream.getTracks().forEach(track => track.stop());
+      screenVideo.style.display='none';
+      screenStream=null;
+    }
+  } catch(err){alert('Screen share failed: '+err);}
 });
 </script>
 
