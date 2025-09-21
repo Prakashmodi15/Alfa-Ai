@@ -767,8 +767,20 @@ function speakText(text){
 sendButton.addEventListener('click', ()=>sendMessage(chatInput.value));
 chatInput.addEventListener('keypress', (e)=>{if(e.key==='Enter') sendMessage(chatInput.value);});
 
+// Dark Mode Toggle
+darkModeBtn.addEventListener('click', ()=>{
+    document.body.classList.toggle('dark-mode');
+});
+
+// Stop any ongoing recognition before starting new
+function stopAllRecognition(){
+    voiceInputRecognition?.stop?.();
+    voiceCommandRecognition?.stop?.();
+}
+
 // Voice Input
 voiceButton.addEventListener('click', ()=>{
+    stopAllRecognition();
     if(!voiceInputRecognition){addMessage("वॉइस इनपुट समर्थित नहीं है।",'bot'); return;}
     voiceInputRecognition.start();
     voiceInputRecognition.onresult = (event)=>{
@@ -780,13 +792,9 @@ voiceButton.addEventListener('click', ()=>{
     }
 });
 
-// Dark Mode Toggle
-darkModeBtn.addEventListener('click', ()=>{
-    document.body.classList.toggle('dark-mode');
-});
-
 // Voice Command
 voiceCommandBtn.addEventListener('click', ()=>{
+    stopAllRecognition();
     if(!voiceCommandRecognition){addMessage("वॉइस कमांड समर्थित नहीं है।",'bot'); return;}
     voiceCommandBtn.classList.add('listening');
     voiceCommandRecognition.start();
@@ -804,8 +812,7 @@ voiceCommandBtn.addEventListener('click', ()=>{
 
     voiceCommandRecognition.onend = ()=>{voiceCommandBtn.classList.remove('listening');}
 });
-
-function processVoiceCommand(command){
+    function processVoiceCommand(command){
     commandText.textContent = `कमांड: ${command}`;
     commandOutput.classList.add('show');
     executeCommand.onclick = ()=>{executeAppCommand(command); commandOutput.classList.remove('show');};
