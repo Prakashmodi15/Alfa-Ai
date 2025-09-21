@@ -480,11 +480,13 @@
                     </div>
                 </div>
 
+                <!-- Chat Input Actions Replace -->
                 <div class="chat-input-container">
                     <input type="text" class="chat-input" placeholder="अपना संदेश यहाँ टाइप करें...">
                     <div class="input-actions">
-                        <button class="action-btn"><i class="fas fa-paper-plane"></i></button>
-                        <button class="action-btn"><i class="fas fa-microphone"></i></button>
+                        <button class="action-btn" id="send-btn"><i class="fas fa-paper-plane"></i></button>
+                        <button class="action-btn" id="voice-btn"><i class="fas fa-microphone"></i></button>
+                        <button class="action-btn" id="video-btn"><i class="fas fa-video"></i></button>
                     </div>
                 </div>
             </div>
@@ -528,107 +530,112 @@
     </footer>
 
     <script>
-const chatMessages = document.querySelector('.chat-messages');
-const chatInput = document.querySelector('.chat-input');
-const sendBtn = document.querySelector('.action-btn:first-child');
-const voiceBtn = document.querySelector('.input-actions .action-btn:last-child');
-const videoBtn = document.querySelector('.nav-buttons .btn:first-child');
-const typingIndicator = document.querySelector('.typing-indicator');
+        const chatMessages = document.querySelector('.chat-messages');
+        const chatInput = document.querySelector('.chat-input');
+        const sendButton = document.getElementById('send-btn');
+        const voiceButton = document.getElementById('voice-btn');
+        const videoButton = document.getElementById('video-btn');
+        const typingIndicator = document.querySelector('.typing-indicator');
 
-// addMessage function
-function addMessage(content, sender) {
-    const messageDiv = document.createElement('div');
-    messageDiv.classList.add('message', sender + '-message');
+        // Add message function
+        function addMessage(content, sender) {
+            const messageDiv = document.createElement('div');
+            messageDiv.classList.add('message', sender + '-message');
 
-    const messageContent = document.createElement('div');
-    messageContent.classList.add('message-content');
-    messageContent.textContent = content;
+            const messageContent = document.createElement('div');
+            messageContent.classList.add('message-content');
+            messageContent.textContent = content;
 
-    const messageTime = document.createElement('div');
-    messageTime.classList.add('message-time');
-    messageTime.textContent = getCurrentTime();
+            const messageTime = document.createElement('div');
+            messageTime.classList.add('message-time');
+            messageTime.textContent = getCurrentTime();
 
-    messageDiv.appendChild(messageContent);
-    messageDiv.appendChild(messageTime);
-    chatMessages.appendChild(messageDiv);
-    chatMessages.scrollTop = chatMessages.scrollHeight;
-}
+            messageDiv.appendChild(messageContent);
+            messageDiv.appendChild(messageTime);
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
 
-// get current time
-function getCurrentTime() {
-    const now = new Date();
-    return now.getHours() + ':' + (now.getMinutes() < 10 ? '0' : '') + now.getMinutes();
-}
+        // get current time
+        function getCurrentTime() {
+            const now = new Date();
+            return now.getHours() + ':' + (now.getMinutes() < 10 ? '0' : '') + now.getMinutes();
+        }
 
-// Send message
-async function sendMessage(message) {
-    if (!message) return;
-    addMessage(message, 'user');
-    chatInput.value = '';
-    typingIndicator.style.display = 'block';
+        // Chat message send
+        async function sendMessage(message) {
+            if (!message) return;
+            addMessage(message, 'user');
+            chatInput.value = '';
+            typingIndicator.style.display = 'block';
+            chatMessages.scrollTop = chatMessages.scrollHeight;
 
-    try {
-        const res = await fetch('/api/alfa', {
-            method: 'POST',
-            headers: {'Content-Type':'application/json'},
-            body: JSON.stringify({ message })
+            try {
+                const res = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message })
+                });
+                const data = await res.json();
+                typingIndicator.style.display = 'none';
+                addMessage(data.reply || "सर्वर से जवाब नहीं मिला।", 'bot');
+            } catch (e) {
+                typingIndicator.style.display = 'none';
+                addMessage("सर्वर एरर, बाद में कोशिश करें।", 'bot');
+                console.error(e);
+            }
+        }
+
+        // Voice command
+        voiceButton.addEventListener('click', () => {
+            if (!('webkitSpeechRecognition' in window)) {
+                alert('आपका ब्राउज़र वॉइस को सपोर्ट नहीं करता।');
+                return;
+            }
+            const recognition = new webkitSpeechRecognition();
+            recognition.lang = 'hi-IN';
+            recognition.start();
+            recognition.onresult = (event) => {
+                const voiceMessage = event.results[0][0].transcript;
+                sendMessage(voiceMessage);
+            }
         });
-        const data = await res.json();
-        const reply = data.reply || "माफ़ करें, जवाब नहीं मिला।";
-        addMessage(reply, 'bot');
-        speakText(reply);
-    } catch(err) {
-        addMessage("सर्वर से जवाब नहीं मिला।", 'bot');
-        console.error(err);
-    } finally {
-        typingIndicator.style.display = 'none';
-    }
-}
 
-// Speech synthesis (bot reply voice)
-function speakText(text) {
-    if (!('speechSynthesis' in window)) return;
-    const utter = new SpeechSynthesisUtterance(text);
-    utter.lang = 'hi-IN';
-    window.speechSynthesis.speak(utter);
-}
+        // Video / Screen Share command
+        videoButton.addEventListener('click', async () => {
+            if (!navigator.mediaDevices.getDisplayMedia) {
+                alert("Screen share supported नहीं है।");
+                return;
+            }
+            try {
+                const stream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: true });
+                const videoElem = document.createElement('video');
+                videoElem.srcObject = stream;
+                videoElem.autoplay = true;
+                videoElem.style.width = '300px';
+                chatMessages.appendChild(videoElem);
+                chatMessages.scrollTop = chatMessages.scrollHeight;
 
-// Event listeners
-sendBtn.addEventListener('click', () => sendMessage(chatInput.value));
-chatInput.addEventListener('keypress', (e) => { if(e.key==='Enter') sendMessage(chatInput.value); });
+                // Send event to backend if needed
+                await fetch('/api/command', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'screen_share_started' })
+                });
 
-// Voice input
-voiceBtn.addEventListener('click', () => {
-    if (!('webkitSpeechRecognition' in window)) {
-        addMessage("वॉइस इनपुट आपके ब्राउज़र में समर्थित नहीं है।", 'bot');
-        return;
-    }
-    const recognition = new webkitSpeechRecognition();
-    recognition.lang = 'hi-IN';
-    recognition.start();
-    recognition.onresult = (event) => {
-        const speechText = event.results[0][0].transcript;
-        sendMessage(speechText);
-    };
-});
+            } catch (err) {
+                console.error("Screen share error:", err);
+                alert("Screen share failed");
+            }
+        });
 
-// Video call
-videoBtn.addEventListener('click', async () => {
-    addMessage("📹 वीडियो कॉल चालू हो रही है...", 'bot');
-    try {
-        const stream = await navigator.mediaDevices.getUserMedia({video:true, audio:true});
-        const video = document.createElement('video');
-        video.srcObject = stream;
-        video.autoplay = true;
-        video.style.width = '100%';
-        video.style.borderRadius = '12px';
-        chatMessages.appendChild(video);
-        chatMessages.scrollTop = chatMessages.scrollHeight;
-    } catch(err) {
-        addMessage("वीडियो कॉल चालू नहीं हो पाया।", 'bot');
-        console.error(err);
-    }
-});
-</script>
+        // Send button click
+        sendButton.addEventListener('click', () => sendMessage(chatInput.value));
+
+        // Enter key
+        chatInput.addEventListener('keypress', e => {
+            if (e.key === 'Enter') sendMessage(chatInput.value);
+        });
+    </script>
 </body>
 </html>
