@@ -830,6 +830,193 @@ videoCallBtn.addEventListener('click', async () => {
         const videoEl = document.createElement('video');
         videoEl.srcObject = stream;
         videoEl.autoplay = true;
+<script>
+const chatMessages = document.querySelector('.chat-messages');
+const chatInput = document.querySelector('.chat-input');
+const sendButton = document.getElementById('send-btn');
+const voiceButton = document.getElementById('voice-btn');
+const videoCallBtn = document.getElementById('video-call-btn');
+const darkModeBtn = document.getElementById('dark-mode-btn');
+const fullscreenBtn = document.getElementById('fullscreen-btn');
+const voiceCommandBtn = document.getElementById('voiceCommandBtn');
+const screenShareBtn = document.getElementById('screenShareBtn');
+const commandOutput = document.getElementById('commandOutput');
+const commandText = document.getElementById('commandText');
+const executeCommand = document.getElementById('executeCommand');
+const cancelCommand = document.getElementById('cancelCommand');
+const typingIndicator = document.querySelector('.typing-indicator');
+
+let recognition = null;
+if ('webkitSpeechRecognition' in window) {
+    recognition = new webkitSpeechRecognition();
+    recognition.continuous = false;
+    recognition.lang = 'hi-IN';
+    recognition.interimResults = false;
+    recognition.maxAlternatives = 1;
+}
+
+// Add message
+function addMessage(content, sender) {
+    const messageDiv = document.createElement('div');
+    messageDiv.classList.add('message', sender + '-message');
+    const messageContent = document.createElement('div');
+    messageContent.classList.add('message-content');
+    messageContent.textContent = content;
+    const messageTime = document.createElement('div');
+    messageTime.classList.add('message-time');
+    messageTime.textContent = getCurrentTime();
+    messageDiv.appendChild(messageContent);
+    messageDiv.appendChild(messageTime);
+    chatMessages.appendChild(messageDiv);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+
+function getCurrentTime() {
+    const now = new Date();
+    return now.getHours() + ':' + (now.getMinutes()<10?'0':'') + now.getMinutes();
+}
+
+async function sendMessage(message) {
+    if(!message) return;
+    addMessage(message,'user');
+    chatInput.value='';
+    typingIndicator.style.display='block';
+
+    try {
+        const res = await fetch('/api/alfa', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ message }),
+        });
+        const data = await res.json();
+        const botReply = data.reply || "माफ़ करें, इस समय मैं जवाब नहीं दे पा रहा हूं।";
+        addMessage(botReply,'bot');
+        speakText(botReply);
+    } catch(err) {
+        addMessage("API error: "+err.message,'bot');
+    }
+
+    typingIndicator.style.display='none';
+}
+
+function speakText(text){
+    if(!('speechSynthesis' in window)) return;
+    const utter = new SpeechSynthesisUtterance(text);
+    utter.lang='hi-IN';
+    window.speechSynthesis.speak(utter);
+}
+
+// Button Events
+sendButton.addEventListener('click', ()=>sendMessage(chatInput.value));
+chatInput.addEventListener('keypress', (e)=>{if(e.key==='Enter') sendMessage(chatInput.value);});
+
+voiceButton.addEventListener('click', ()=>{
+    if(!recognition){addMessage("वॉइस इनपुट समर्थित नहीं है।",'bot'); return;}
+    recognition.start();
+    recognition.onresult = (event)=>{
+        const speechText = event.results[0][0].transcript;
+        chatInput.value = speechText;
+    }
+});
+
+// Dark Mode Toggle
+darkModeBtn.addEventListener('click', ()=>{
+    document.body.classList.toggle('dark-mode');
+});
+
+// Voice command
+voiceCommandBtn.addEventListener('click', ()=>{
+    if(!recognition){addMessage("वॉइस कमांड समर्थित नहीं है।",'bot'); return;}
+    voiceCommandBtn.classList.add('listening');
+    recognition.start();
+
+    recognition.onresult = (event)=>{
+        const command = event.results[0][0].transcript;
+        voiceCommandBtn.classList.remove('listening');
+        processVoiceCommand(command);
+    };
+
+    recognition.onerror = ()=>{
+        voiceCommandBtn.classList.remove('listening');
+        addMessage("वॉइस कमांड त्रुटि।",'bot');
+    };
+
+    recognition.onend = ()=>{voiceCommandBtn.classList.remove('listening');}
+});
+
+function processVoiceCommand(command){
+    commandText.textContent = `कमांड: ${command}`;
+    commandOutput.classList.add('show');
+    executeCommand.onclick = ()=>{executeAppCommand(command); commandOutput.classList.remove('show');};
+    cancelCommand.onclick = ()=>{commandOutput.classList.remove('show'); addMessage("कमांड रद्द की गई।",'bot');};
+}
+
+function executeAppCommand(command){
+    addMessage(`कमांड: ${command}`,'user');
+
+    if(command.match(/WhatsApp|व्हाट्सएप|whatsapp/)){
+        const messageMatch = command.match(/को (.+) भेजो/);
+        let message="Hello";
+        if(messageMatch){ message=messageMatch[1].trim(); }
+        const whatsappUrl=`https://wa.me/?text=${encodeURIComponent(message)}`;
+        window.open(whatsappUrl,'_blank');
+        addMessage(`WhatsApp message भेजा जा रहा है...`,'bot');
+    } else if(command.match(/YouTube|यूट्यूब|youtube/)){
+        const searchMatch=command.match(/(खोलो|चलाओ) (.+)/);
+        if(searchMatch){
+            const query=searchMatch[2].trim();
+            window.open(`https://www.youtube.com/results?search_query=${encodeURIComponent(query)}`,'_blank');
+            addMessage(`YouTube पर "${query}" खोला जा रहा है...`,'bot');
+        } else {
+            window.open('https://www.youtube.com','_blank');
+            addMessage("YouTube खोला जा रहा है...",'bot');
+        }
+    } else if(command.match(/Facebook|फेसबुक|facebook/)){
+        window.open('https://www.facebook.com','_blank');
+        addMessage("Facebook खोला जा रहा है...",'bot');
+    } else if(command.match(/Instagram|इंस्टाग्राम|instagram/)){
+        window.open('https://www.instagram.com','_blank');
+        addMessage("Instagram खोला जा रहा है...",'bot');
+    } else {
+        addMessage("मैंने आपकी कमांड समझी: " + command + ". लेकिन मैं इसे प्रोसेस नहीं कर सकता।",'bot');
+    }
+}
+
+// Screen Sharing
+screenShareBtn.addEventListener('click', async ()=>{
+    try{
+        addMessage("स्क्रीन शेयरिंग शुरू की जा रही है...",'bot');
+        if(navigator.mediaDevices.getDisplayMedia){
+            const stream = await navigator.mediaDevices.getDisplayMedia({video:true,audio:true});
+            const video = document.createElement('video');
+            video.srcObject = stream;
+            video.autoplay = true;
+            video.style.width='100%';
+            video.style.maxHeight='300px';
+            video.style.borderRadius='12px';
+            video.style.marginTop='10px';
+            chatMessages.appendChild(video); 
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+            addMessage("स्क्रीन शेयरिंग शुरू हुई...",'bot');
+            stream.getTracks().forEach(track=>{
+                track.onended=()=>{video.remove(); addMessage("स्क्रीन शेयरिंग बंद हुई",'bot');};
+            });
+        } else {
+            addMessage("स्क्रीन शेयरिंग समर्थित नहीं है।",'bot');
+        }
+    } catch(err){
+        addMessage("स्क्रीन शेयरिंग त्रुटि: "+err.message,'bot');
+        console.error(err);
+    }
+});
+
+// Video Call
+videoCallBtn.addEventListener('click', async () => {
+    try {
+        const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+        const videoEl = document.createElement('video');
+        videoEl.srcObject = stream;
+        videoEl.autoplay = true;
         videoEl.style.width = '200px';
         videoEl.style.height = '150px';
         videoEl.style.position = 'fixed';
