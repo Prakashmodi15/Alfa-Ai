@@ -92,7 +92,13 @@ function appendMessage(text,isUser=false){
   msgDiv.appendChild(timeSpan);
 
   if(isUser){div.appendChild(msgDiv); div.appendChild(avatar);}else{div.appendChild(avatar); div.appendChild(msgDiv);}
-  chatMessages.appendChild(div); chatMessages.scrollTop=chatMessages.scrollHeight;
+  
+  // ✅ Scroll logic update
+  const isAtBottom = chatMessages.scrollHeight - chatMessages.scrollTop <= chatMessages.clientHeight + 50;
+  chatMessages.appendChild(div);
+  if(isAtBottom) {
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+  }
 
   if(!isUser) speakLive(text);
 }
