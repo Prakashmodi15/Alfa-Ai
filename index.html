@@ -857,16 +857,15 @@ screenShareBtn.addEventListener('click', async ()=>{
         if(navigator.mediaDevices.getDisplayMedia){
             const stream = await navigator.mediaDevices.getDisplayMedia({video:true,audio:true});
             // Remove previous shared videos
-document.querySelectorAll('.chat-messages video').forEach(v => v.remove());
-
-const video = document.createElement('video');
-video.srcObject = stream;
-video.autoplay = true;
-video.style.width='100%';
-video.style.maxHeight='300px';
-video.style.borderRadius='12px';
-video.style.marginTop='10px';
-chatMessages.appendChild(video);
+            document.querySelectorAll('.chat-messages video').forEach(v => v.remove());
+            const video = document.createElement('video');
+            video.srcObject = stream;
+            video.autoplay = true;
+            video.style.width='100%';
+            video.style.maxHeight='300px';
+            video.style.borderRadius='12px';
+            video.style.marginTop='10px';
+            chatMessages.appendChild(video);
             chatMessages.scrollTop = chatMessages.scrollHeight;
             addMessage("स्क्रीन शेयरिंग शुरू हुई...",'bot');
             stream.getTracks().forEach(track=>{
@@ -878,29 +877,6 @@ chatMessages.appendChild(video);
     } catch(err){
         addMessage("स्क्रीन शेयरिंग त्रुटि: "+err.message,'bot');
         console.error(err);
-    }
-});
-
-// Video Call
-videoCallBtn.addEventListener('click', async () => {
-    try {
-        const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-        const videoEl = document.createElement('video');
-        videoEl.srcObject = stream;
-        videoEl.autoplay = true;
-        videoEl.style.width = '200px';
-        videoEl.style.height = '150px';
-        videoEl.style.position = 'fixed';
-        videoEl.style.bottom = '10px';
-        videoEl.style.right = '10px';
-        videoEl.style.border = '2px solid #333';
-        videoEl.style.borderRadius = '10px';
-        videoEl.style.zIndex = '1000';
-        document.body.appendChild(videoEl);
-        addMessage("वीडियो कॉल शुरू हुई", 'bot');
-    } catch (err) {
-        console.error('Video call error:', err);
-        addMessage('Camera/Audio access denied या error!', 'bot');
     }
 });
 </script>
