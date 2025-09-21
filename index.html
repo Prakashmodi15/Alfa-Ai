@@ -626,7 +626,7 @@
 
             <div class="feature-card">
                 <h3><i class="fas fa-microphone"></i> वॉइस इनपुट/आउटपुट <span class="badge badge-popular">POPULAR</span></h3>
-                <p>स्पीच-टू-टेक्स्ट और टेक्स्ट-टू-स्पीच तकनीक। वॉइस कमांड और वॉइस अनुवाद।</p>
+                <p>स्पीच-टेक्स्ट और टेक्स्ट-टू-स्पीच तकनीक। वॉइस कमांड और वॉइस अनुवाद।</p>
             </div>
 
             <div class="feature-card">
@@ -967,23 +967,19 @@
                 darkModeBtn.innerHTML = '<i class="fas fa-moon"></i> डार्क मोड';
             }
         });
+
        // Fullscreen mode
-        fullscreenBtn.addEventListener('click', () => {
-            if (!document.fullscreenElement) {
-                document.documentElement.requestFullscreen().catch(err => {
-                    console.error(`Fullscreen error: ${err.message}`);
-                });
-                // Fullscreen
-fullscreenBtn.addEventListener('click',()=>{
-    if(!document.fullscreenElement) document.documentElement.requestFullscreen().catch(err=>console.error(err));
-    else if(document.exitFullscreen) document.exitFullscreen();
+fullscreenBtn.addEventListener('click', () => {
+    if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(err => {
+            console.error(`Fullscreen error: ${err.message}`);
+            addMessage("Fullscreen mode चालू नहीं हो पाया।", 'bot');
+        });
+    } else if (document.exitFullscreen) {
+        document.exitFullscreen().catch(err => {
+            console.error(`Exit fullscreen error: ${err.message}`);
+            addMessage("Fullscreen mode बंद नहीं हो पाया।", 'bot');
+        });
+    }
 });
-
-// Send message
-sendButton.addEventListener('click',()=>sendMessage(chatInput.value));
-chatInput.addEventListener('keypress',e=>{if(e.key==='Enter')sendMessage(chatInput.value);});
-</script>
-
-</body>
-</html>
-
+        
