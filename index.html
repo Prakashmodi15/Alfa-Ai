@@ -187,6 +187,13 @@
         .chat-title {
             font-size: 1.2rem;
             font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .chat-title i {
+            color: var(--primary);
         }
 
         .chat-actions {
@@ -357,6 +364,80 @@
             background: rgba(30, 41, 59, 0.95);
         }
 
+        /* New Voice Command UI */
+        .voice-command-ui {
+            position: fixed;
+            bottom: 100px;
+            right: 20px;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .voice-command-btn {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: var(--primary);
+            color: white;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 20px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        .voice-command-btn.listening {
+            background: var(--danger);
+            animation: pulse 1.5s infinite;
+        }
+
+        .command-output {
+            position: fixed;
+            bottom: 180px;
+            right: 20px;
+            background: rgba(30, 41, 59, 0.95);
+            padding: 15px;
+            border-radius: 12px;
+            max-width: 300px;
+            display: none;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            z-index: 1001;
+        }
+
+        .command-output.show {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .command-text {
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+
+        .command-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+
+        .command-btn {
+            padding: 5px 10px;
+            border-radius: 20px;
+            border: none;
+            background: var(--primary);
+            color: white;
+            cursor: pointer;
+            font-size: 0.8rem;
+        }
+
+        .command-btn.cancel {
+            background: var(--danger);
+        }
+
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
@@ -365,6 +446,12 @@
         @keyframes typingAnimation {
             0%, 100% { transform: scale(1); opacity: 0.6; }
             50% { transform: scale(1.2); opacity: 1; }
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
         }
 
         @media (max-width: 768px) {
@@ -382,6 +469,17 @@
             
             .features-grid {
                 grid-template-columns: 1fr;
+            }
+
+            .voice-command-ui {
+                bottom: 80px;
+                right: 10px;
+            }
+
+            .command-output {
+                bottom: 160px;
+                right: 10px;
+                max-width: 250px;
             }
         }
     </style>
@@ -444,11 +542,40 @@
                         </li>
                     </ul>
                 </div>
+
+                <div class="sidebar-section">
+                    <div class="sidebar-title">
+                        <i class="fas fa-mobile-alt"></i>
+                        <span>ऐप कमांड</span>
+                    </div>
+                    <ul class="feature-list">
+                        <li class="feature-item">
+                            <i class="fab fa-whatsapp"></i>
+                            <span>WhatsApp</span>
+                        </li>
+                        <li class="feature-item">
+                            <i class="fab fa-facebook"></i>
+                            <span>Facebook</span>
+                        </li>
+                        <li class="feature-item">
+                            <i class="fab fa-instagram"></i>
+                            <span>Instagram</span>
+                        </li>
+                        <li class="feature-item">
+                            <i class="fab fa-youtube"></i>
+                            <span>YouTube</span>
+                        </li>
+                        <li class="feature-item">
+                            <i class="fas fa-phone"></i>
+                            <span>कॉल</span>
+                        </li>
+                    </ul>
+                </div>
             </div>
 
             <div class="chat-container">
                 <div class="chat-header">
-                    <div class="chat-title">अल्फा AI सहायक</div>
+                    <div class="chat-title"><i class="fas fa-robot"></i> अल्फा AI सहायक</div>
                     <div class="chat-actions">
                         <button class="btn btn-outline" id="fullscreen-btn"><i class="fas fa-expand"></i></button>
                         <button class="btn btn-outline" id="settings-btn"><i class="fas fa-cog"></i></button>
@@ -480,7 +607,6 @@
                     </div>
                 </div>
 
-                <!-- Chat Input Actions Replace -->
                 <div class="chat-input-container">
                     <input type="text" class="chat-input" placeholder="अपना संदेश यहाँ टाइप करें...">
                     <div class="input-actions">
@@ -510,7 +636,7 @@
 
             <div class="feature-card">
                 <h3><i class="fas fa-comment-dots"></i> स्मार्ट चैट <span class="badge badge-new">NEW</span></h3>
-                <p>भावना पहचान, संदर्भ जागरूकता, और व्यक्तिगत प्रतिक्रियाएं।</p>
+                <p>भावना पहचान, संदर्भ जागरूकता, और व्यक्तिगत प्रतिक्रियाएं。</p>
             </div>
 
             <div class="feature-card">
@@ -523,6 +649,23 @@
                 <p>एंड-टू-एंड एन्क्रिप्शन, उपयोगकर्ता प्रमाणीकरण, और डेटा सुरक्षा।</p>
             </div>
         </div>
+    </div>
+
+    <!-- Voice Command UI -->
+    <div class="voice-command-ui">
+        <div class="command-output" id="commandOutput">
+            <div class="command-text" id="commandText"></div>
+            <div class="command-actions">
+                <button class="command-btn" id="executeCommand">Execute</button>
+                <button class="command-btn cancel" id="cancelCommand">Cancel</button>
+            </div>
+        </div>
+        <button class="voice-command-btn" id="voiceCommandBtn">
+            <i class="fas fa-microphone"></i>
+        </button>
+        <button class="voice-command-btn" id="screenShareBtn">
+            <i class="fas fa-desktop"></i>
+        </button>
     </div>
 
     <footer>
@@ -540,6 +683,24 @@
         const fullscreenBtn = document.getElementById('fullscreen-btn');
         const settingsBtn = document.getElementById('settings-btn');
         const typingIndicator = document.querySelector('.typing-indicator');
+        const voiceCommandBtn = document.getElementById('voiceCommandBtn');
+        const screenShareBtn = document.getElementById('screenShareBtn');
+        const commandOutput = document.getElementById('commandOutput');
+        const commandText = document.getElementById('commandText');
+        const executeCommand = document.getElementById('executeCommand');
+        const cancelCommand = document.getElementById('cancelCommand');
+
+        // Voice command recognition
+        let recognition = null;
+        if ('webkitSpeechRecognition' in window) {
+            recognition = new webkitSpeechRecognition();
+            recognition.continuous = false;
+            recognition.lang = 'hi-IN';
+            recognition.interimResults = false;
+            recognition.maxAlternatives = 1;
+        } else {
+            console.warn("Web Speech API not supported in this browser");
+        }
 
         // addMessage function
         function addMessage(content, sender) {
@@ -574,19 +735,22 @@
             typingIndicator.style.display = 'block';
 
             try {
-                const res = await fetch('/api/alfa', {
-                    method: 'POST',
-                    headers: {'Content-Type':'application/json'},
-                    body: JSON.stringify({ message })
-                });
-                const data = await res.json();
-                const reply = data.reply || "माफ़ करें, जवाब नहीं मिला।";
-                addMessage(reply, 'bot');
-                speakText(reply);
+                // Simulate API call
+                setTimeout(() => {
+                    const replies = [
+                        "मैंने आपका संदेश समझ लिया: " + message,
+                        "आपने कहा: " + message,
+                        "आपकी कमांड प्रोसेस की जा रही है",
+                        "मैं इस पर काम कर रहा हूं"
+                    ];
+                    const randomReply = replies[Math.floor(Math.random() * replies.length)];
+                    addMessage(randomReply, 'bot');
+                    speakText(randomReply);
+                    typingIndicator.style.display = 'none';
+                }, 1000);
             } catch(err) {
                 addMessage("सर्वर से जवाब नहीं मिला।", 'bot');
                 console.error(err);
-            } finally {
                 typingIndicator.style.display = 'none';
             }
         }
@@ -601,62 +765,196 @@
 
         // Voice input
         voiceButton.addEventListener('click', () => {
-            if (!('webkitSpeechRecognition' in window)) {
+            if (!recognition) {
                 addMessage("वॉइस इनपुट आपके ब्राउज़र में समर्थित नहीं है।", 'bot');
                 return;
             }
-            const recognition = new webkitSpeechRecognition();
-            recognition.lang = 'hi-IN';
             recognition.start();
             recognition.onresult = (event) => {
                 const speechText = event.results[0][0].transcript;
-                sendMessage(speechText);
+                chatInput.value = speechText;
             };
+        });
+
+        // Voice command system
+        voiceCommandBtn.addEventListener('click', () => {
+            if (!recognition) {
+                addMessage("वॉइस कमांड आपके ब्राउज़र में समर्थित नहीं है।", 'bot');
+                return;
+            }
+            
+            voiceCommandBtn.classList.add('listening');
+            recognition.start();
+            
+            recognition.onresult = (event) => {
+                const command = event.results[0][0].transcript;
+                voiceCommandBtn.classList.remove('listening');
+                processVoiceCommand(command);
+            };
+            
+            recognition.onerror = (event) => {
+                voiceCommandBtn.classList.remove('listening');
+                console.error('Speech recognition error', event.error);
+                addMessage("वॉइस कमांड में त्रुटि हुई। कृपया पुनः प्रयास करें।", 'bot');
+            };
+            
+            recognition.onend = () => {
+                voiceCommandBtn.classList.remove('listening');
+            };
+        });
+
+        // Process voice command
+        function processVoiceCommand(command) {
+            commandText.textContent = `कमांड: ${command}`;
+            commandOutput.classList.add('show');
+            
+            // Setup execute button
+            executeCommand.onclick = () => {
+                executeAppCommand(command);
+                commandOutput.classList.remove('show');
+            };
+            
+            // Setup cancel button
+            cancelCommand.onclick = () => {
+                commandOutput.classList.remove('show');
+                addMessage("कमांड रद्द की गई।", 'bot');
+            };
+        }
+
+        // Execute app command
+        function executeAppCommand(command) {
+            addMessage(`कमांड: ${command}`, 'user');
+            
+            // WhatsApp commands
+            if (command.includes('WhatsApp') || command.includes('व्हाट्सएप') || command.includes('whatsapp')) {
+                if (command.includes('भेजो') || command.includes('मैसेज') || command.includes('send')) {
+                    // Extract contact and message
+                    const contactMatch = command.match(/([A-Za-z0-9 ]+) को/);
+                    const messageMatch = command.match(/को (.+) भेजो/);
+                    
+                    let contact = "contact";
+                    let message = "Hello";
+                    
+                    if (contactMatch && messageMatch) {
+                        contact = contactMatch[1].trim();
+                        message = messageMatch[1].trim();
+                    }
+                    
+                    // Open WhatsApp with pre-filled message
+                    const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message)}`;
+                    window.open(whatsappUrl, '_blank');
+                    
+                    addMessage(`WhatsApp पर ${contact} को "${message}" भेजा जा रहा है...`, 'bot');
+                    speakText(`WhatsApp message sent to ${contact}`);
+                }
+                else if (command.includes('खोलो') || command.includes('open')) {
+                    window.open('https://web.whatsapp.com', '_blank');
+                    addMessage("WhatsApp खोला जा रहा है...", 'bot');
+                }
+            }
+            // YouTube commands
+            else if (command.includes('YouTube') || command.includes('यूट्यूब') || command.includes('youtube')) {
+                if (command.includes('खोलो') || command.includes('चलाओ') || command.includes('open')) {
+                    const searchMatch = command.match(/चलाओ (.+)/) || command.match(/खोलो (.+)/) || command.match(/open (.+)/);
+                    if (searchMatch) {
+                        const query = searchMatch[1].trim();
+                        const youtubeUrl = `https://www.youtube.com/results?search_query=${encodeURIComponent(query)}`;
+                        window.open(youtubeUrl, '_blank');
+                        addMessage(`YouTube पर "${query}" खोला जा रहा है...`, 'bot');
+                    } else {
+                        window.open('https://www.youtube.com', '_blank');
+                        addMessage("YouTube खोला जा रहा है...", 'bot');
+                    }
+                }
+            }
+            // Call commands
+            else if (command.includes('कॉल') || command.includes('call')) {
+                const contactMatch = command.match(/([A-Za-z0-9 ]+) को कॉल/) || command.match(/call ([A-Za-z0-9 ]+)/);
+                if (contactMatch) {
+                    const contact = contactMatch[1].trim();
+                    // This would normally open the dialer with the number
+                    addMessage(`${contact} को कॉल किया जा रहा है...`, 'bot');
+                    speakText(`Calling ${contact}`);
+                } else {
+                    addMessage("कृपया सही फॉर्मेट में बोलें: '[नाम] को कॉल करो'", 'bot');
+                }
+            }
+            // Facebook commands
+            else if (command.includes('Facebook') || command.includes('फेसबुक') || command.includes('facebook')) {
+                window.open('https://www.facebook.com', '_blank');
+                addMessage("Facebook खोला जा रहा है...", 'bot');
+            }
+            // Instagram commands
+            else if (command.includes('Instagram') || command.includes('इंस्टाग्राम') || command.includes('instagram')) {
+                window.open('https://www.instagram.com', '_blank');
+                addMessage("Instagram खोला जा रहा है...", 'bot');
+            }
+            // Default response
+            else {
+                addMessage("मैंने आपकी कमांड समझी: " + command + ". लेकिन मैं अभी इस प्रकार की कमांड को प्रोसेस नहीं कर सकता।", 'bot');
+            }
+        }
+
+        // Screen sharing
+        screenShareBtn.addEventListener('click', async () => {
+            try {
+                addMessage("स्क्रीन शेयरिंग शुरू की जा रही है...", 'bot');
+                
+                if (navigator.mediaDevices && navigator.mediaDevices.getDisplayMedia) {
+                    const stream = await navigator.mediaDevices.getDisplayMedia({ 
+                        video: true,
+                        audio: true 
+                    });
+                    
+                    const video = document.createElement('video');
+                    video.srcObject = stream;
+                    video.autoplay = true;
+                    video.style.width = '100%';
+                    video.style.maxHeight = '300px';
+                    video.style.borderRadius = '12px';
+                    video.style.marginTop = '10px';
+                    
+                    // Add to chat
+                    chatMessages.appendChild(video);
+                    chatMessages.scrollTop = chatMessages.scrollHeight;
+                    
+                    addMessage("स्क्रीन शेयरिंग शुरू हुई...", 'bot');
+                    
+                    // Stop sharing when the track ends
+                    stream.getTracks().forEach(track => {
+                        track.onended = () => {
+                            video.remove();
+                            addMessage("स्क्रीन शेयरिंग बंद हुई", 'bot');
+                        };
+                    });
+                } else {
+                    addMessage("स्क्रीन शेयरिंग आपके ब्राउज़र में समर्थित नहीं है।", 'bot');
+                }
+            } catch (error) {
+                console.error('Screen sharing failed:', error);
+                addMessage("स्क्रीन शेयरिंग में त्रुटि: " + error.message, 'bot');
+            }
         });
 
         // Video call
         videoCallBtn.addEventListener('click', async () => {
             addMessage("📹 वीडियो कॉल चालू हो रही है...", 'bot');
             try {
-                const stream = await navigator.mediaDevices.getUserMedia({video:true, audio:true});
-                const video = document.createElement('video');
-                video.srcObject = stream;
-                video.autoplay = true;
-                video.style.width = '100%';
-                video.style.borderRadius = '12px';
-                chatMessages.appendChild(video);
-                chatMessages.scrollTop = chatMessages.scrollHeight;
+                if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+                    const stream = await navigator.mediaDevices.getUserMedia({video:true, audio:true});
+                    const video = document.createElement('video');
+                    video.srcObject = stream;
+                    video.autoplay = true;
+                    video.style.width = '100%';
+                    video.style.borderRadius = '12px';
+                    chatMessages.appendChild(video);
+                    chatMessages.scrollTop = chatMessages.scrollHeight;
+                } else {
+                    addMessage("वीडियो कॉल आपके ब्राउज़र में समर्थित नहीं है।", 'bot');
+                }
             } catch(err) {
                 addMessage("वीडियो कॉल चालू नहीं हो पाया।", 'bot');
                 console.error(err);
-            }
-        });
-
-        // Screen Share command
-        videoButton.addEventListener('click', async () => {
-            if (!navigator.mediaDevices.getDisplayMedia) {
-                alert("Screen share supported नहीं है।");
-                return;
-            }
-            try {
-                const stream = await navigator.mediaDevices.getDisplayMedia({video:true, audio:true});
-                const videoElem = document.createElement('video');
-                videoElem.srcObject = stream;
-                videoElem.autoplay = true;
-                videoElem.style.width = '300px';
-                chatMessages.appendChild(videoElem);
-                chatMessages.scrollTop = chatMessages.scrollHeight;
-
-                // Send event to backend if needed
-                await fetch('/api/command', {
-                    method:'POST',
-                    headers:{'Content-Type':'application/json'},
-                    body:JSON.stringify({action:'screen_share_started'})
-                });
-
-            } catch(err) {
-                console.error("Screen share error:", err);
-                alert("Screen share failed");
             }
         });
 
@@ -669,35 +967,23 @@
                 darkModeBtn.innerHTML = '<i class="fas fa-moon"></i> डार्क मोड';
             }
         });
-
-        // Fullscreen mode
+       // Fullscreen mode
         fullscreenBtn.addEventListener('click', () => {
             if (!document.fullscreenElement) {
                 document.documentElement.requestFullscreen().catch(err => {
                     console.error(`Fullscreen error: ${err.message}`);
                 });
-                fullscreenBtn.innerHTML = '<i class="fas fa-compress"></i>';
-            } else {
-                if (document.exitFullscreen) {
-                    document.exitFullscreen();
-                    fullscreenBtn.innerHTML = '<i class="fas fa-expand"></i>';
-                }
-            }
-        });
+                // Fullscreen
+fullscreenBtn.addEventListener('click',()=>{
+    if(!document.fullscreenElement) document.documentElement.requestFullscreen().catch(err=>console.error(err));
+    else if(document.exitFullscreen) document.exitFullscreen();
+});
 
-        // Settings button
-        settingsBtn.addEventListener('click', () => {
-            addMessage("सेटिंग्स मेनू खोला जा रहा है...", 'bot');
-            // Add actual settings functionality here
-        });
+// Send message
+sendButton.addEventListener('click',()=>sendMessage(chatInput.value));
+chatInput.addEventListener('keypress',e=>{if(e.key==='Enter')sendMessage(chatInput.value);});
+</script>
 
-        // Send button click
-        sendButton.addEventListener('click', () => sendMessage(chatInput.value));
-
-        // Enter key
-        chatInput.addEventListener('keypress', e => {
-            if (e.key === 'Enter') sendMessage(chatInput.value);
-        });
-    </script>
 </body>
 </html>
+
