@@ -547,8 +547,8 @@
         chatMessages.scrollTop = chatMessages.scrollHeight;
 
         try {
-            // API कॉल करें
-            const response = await fetch('/api/chat', { // आपके backend route का path
+            // API कॉल करें - अब api/alfa.js का उपयोग करेगा
+            const response = await fetch('/api/alfa', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ message })
@@ -562,7 +562,7 @@
         } catch (error) {
             typingIndicator.style.display = 'none';
             addMessage("सर्वर से जवाब नहीं मिल पाया। कृपया बाद में कोशिश करें।", 'bot');
-            console.error("Chat API Error:", error);
+            console.error("Alfa API Error:", error);
         }
     }
 
