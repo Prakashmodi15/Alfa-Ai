@@ -854,32 +854,6 @@ const executeCommand = document.getElementById('executeCommand');
 const cancelCommand = document.getElementById('cancelCommand');
 const typingIndicator = document.querySelector('.typing-indicator');
 
-// OpenRouter API setup
-const OPENROUTER_API_KEY = "YOUR_API_KEY_HERE"; // Verce में store करके fetch कर सकते हो
-
-// Speech recognition setup
-let recognition = null;
-if ('webkitSpeechRecognition' in window) {
-    recognition = new webkitSpeechRecognition();
-    recognition.continuous = false;
-    recognition.lang = 'hi-IN';
-    recognition.interimResults = false;
-    recognition.maxAlternative<script>
-const chatMessages = document.querySelector('.chat-messages');
-const chatInput = document.querySelector('.chat-input');
-const sendButton = document.getElementById('send-btn');
-const voiceButton = document.getElementById('voice-btn');
-const videoCallBtn = document.getElementById('video-call-btn');
-const darkModeBtn = document.getElementById('dark-mode-btn');
-const fullscreenBtn = document.getElementById('fullscreen-btn');
-const voiceCommandBtn = document.getElementById('voiceCommandBtn');
-const screenShareBtn = document.getElementById('screenShareBtn');
-const commandOutput = document.getElementById('commandOutput');
-const commandText = document.getElementById('commandText');
-const executeCommand = document.getElementById('executeCommand');
-const cancelCommand = document.getElementById('cancelCommand');
-const typingIndicator = document.querySelector('.typing-indicator');
-
 let recognition = null;
 if ('webkitSpeechRecognition' in window) {
     recognition = new webkitSpeechRecognition();
