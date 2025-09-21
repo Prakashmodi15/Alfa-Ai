@@ -749,10 +749,10 @@ function speakText(text){
 }
 
 // Button Events
-sendButton.addEventListener('click',()=>sendMessage(chatInput.value));
-chatInput.addEventListener('keypress',(e)=>{if(e.key==='Enter') sendMessage(chatInput.value);});
+sendButton.addEventListener('click', ()=>sendMessage(chatInput.value));
+chatInput.addEventListener('keypress', (e)=>{if(e.key==='Enter') sendMessage(chatInput.value);});
 
-voiceButton.addEventListener('click',()=>{
+voiceButton.addEventListener('click', ()=>{
     if(!recognition){addMessage("वॉइस इनपुट समर्थित नहीं है।",'bot'); return;}
     recognition.start();
     recognition.onresult = (event)=>{
@@ -761,23 +761,27 @@ voiceButton.addEventListener('click',()=>{
     }
 });
 
+// Dark Mode Toggle
+darkModeBtn.addEventListener('click', ()=>{
+    document.body.classList.toggle('dark-mode');
+});
+
 // Voice command
-voiceCommandBtn.addEventListener('click',()=>{
+voiceCommandBtn.addEventListener('click', ()=>{
     if(!recognition){addMessage("वॉइस कमांड समर्थित नहीं है।",'bot'); return;}
     voiceCommandBtn.classList.add('listening');
     recognition.start();
-    recognition.onresult=(event)=>{
-        const command=event.results[0][0].transcript;
+    recognition.onresult = (event)=>{
+        const command = event.results[0][0].transcript;
         voiceCommandBtn.classList.remove('listening');
         processVoiceCommand(command);
     };
-    recognition.onerror=(event)=>{
+    recognition.onerror = (event)=>{
         voiceCommandBtn.classList.remove('listening');
         addMessage("वॉइस कमांड त्रुटि।",'bot');
     };
-    recognition.onend=()=>{voiceCommandBtn.classList.remove('listening');}
+    recognition.onend = ()=>{voiceCommandBtn.classList.remove('listening');}
 });
-
 function processVoiceCommand(command){
     commandText.textContent=`कमांड: ${command}`;
     commandOutput.classList.add('show');
