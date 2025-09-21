@@ -528,85 +528,83 @@
     </footer>
 
     <script>
-        // चैट फ़ंक्शनलिटी
-        const chatMessages = document.querySelector('.chat-messages');
-        const chatInput = document.querySelector('.chat-input');
-        const sendButton = document.querySelector('.action-btn:first-child');
-        const typingIndicator = document.querySelector('.typing-indicator');
+    const chatMessages = document.querySelector('.chat-messages');
+    const chatInput = document.querySelector('.chat-input');
+    const sendButton = document.querySelector('.action-btn:first-child');
+    const typingIndicator = document.querySelector('.typing-indicator');
 
-        // संदेश भेजने का फ़ंक्शन
-        function sendMessage() {
-            const message = chatInput.value.trim();
-            if (!message) return;
+    // संदेश भेजने का फ़ंक्शन
+    async function sendMessage() {
+        const message = chatInput.value.trim();
+        if (!message) return;
 
-            // उपयोगकर्ता का संदेश जोड़ें
-            addMessage(message, 'user');
-            chatInput.value = '';
+        // उपयोगकर्ता का संदेश जोड़ें
+        addMessage(message, 'user');
+        chatInput.value = '';
 
-            // टाइपिंग इंडिकेटर दिखाएं
-            typingIndicator.style.display = 'block';
-            chatMessages.scrollTop = chatMessages.scrollHeight;
+        // टाइपिंग इंडिकेटर दिखाएं
+        typingIndicator.style.display = 'block';
+        chatMessages.scrollTop = chatMessages.scrollHeight;
 
-            // बॉट की प्रतिक्रिया (नकली AI)
-            setTimeout(() => {
-                typingIndicator.style.display = 'none';
-                let botResponse = "मैं इस प्रश्न का उत्तर देने के लिए तैयार हूं। कृपया अपनी query विस्तार से बताएं।";
-                
-                if (message.includes('फीचर') || message.includes('सुविधा')) {
-                    botResponse = "मेरे पास 100+ उन्नत सुविधाएं हैं जिनमें मल्टी-लैंग्वेज सपोर्ट, वॉइस चैट, वीडियो कॉल, स्मार्ट रेस्पॉन्स और बहुत कुछ शामिल है!";
-                } else if (message.includes('नाम')) {
-                    botResponse = "मेरा नाम अल्फा AI है और मैं एक उन्नत आर्टिफिशियल इंटेलिजेंस सहायक हूं।";
-                }
-                
-                addMessage(botResponse, 'bot');
-            }, 2000);
+        try {
+            // API कॉल करें
+            const response = await fetch('/api/chat', { // आपके backend route का path
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ message })
+            });
+
+            const data = await response.json();
+            const botReply = data.reply || "माफ़ करें, इस समय मैं जवाब नहीं दे पा रहा हूं।";
+
+            typingIndicator.style.display = 'none';
+            addMessage(botReply, 'bot');
+        } catch (error) {
+            typingIndicator.style.display = 'none';
+            addMessage("सर्वर से जवाब नहीं मिल पाया। कृपया बाद में कोशिश करें।", 'bot');
+            console.error("Chat API Error:", error);
         }
+    }
 
-        // संदेश जोड़ने का फ़ंक्शन
-        function addMessage(content, sender) {
-            const messageDiv = document.createElement('div');
-            messageDiv.classList.add('message');
-            messageDiv.classList.add(sender + '-message');
-            
-            const messageContent = document.createElement('div');
-            messageContent.classList.add('message-content');
-            messageContent.textContent = content;
-            
-            const messageTime = document.createElement('div');
-            messageTime.classList.add('message-time');
-            messageTime.textContent = getCurrentTime();
-            
-            messageDiv.appendChild(messageContent);
-            messageDiv.appendChild(messageTime);
-            
-            chatMessages.appendChild(messageDiv);
-            chatMessages.scrollTop = chatMessages.scrollHeight;
-        }
+    // संदेश जोड़ने का फ़ंक्शन
+    function addMessage(content, sender) {
+        const messageDiv = document.createElement('div');
+        messageDiv.classList.add('message', sender + '-message');
 
-        // वर्तमान समय प्राप्त करें
-        function getCurrentTime() {
-            const now = new Date();
-            return now.getHours() + ':' + (now.getMinutes() < 10 ? '0' : '') + now.getMinutes();
-        }
+        const messageContent = document.createElement('div');
+        messageContent.classList.add('message-content');
+        messageContent.textContent = content;
 
-        // इवेंट लिसनर्स
-        sendButton.addEventListener('click', sendMessage);
-        chatInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                sendMessage();
-            }
-        });
+        const messageTime = document.createElement('div');
+        messageTime.classList.add('message-time');
+        messageTime.textContent = getCurrentTime();
 
-        // डार्क/लाइट मोड टॉगल
-        const modeToggle = document.querySelector('.btn-outline');
-        modeToggle.addEventListener('click', () => {
-            document.body.classList.toggle('dark-mode');
-            if (document.body.classList.contains('dark-mode')) {
-                modeToggle.innerHTML = '<i class="fas fa-sun"></i> लाइट मोड';
-            } else {
-                modeToggle.innerHTML = '<i class="fas fa-moon"></i> डार्क मोड';
-            }
-        });
+        messageDiv.appendChild(messageContent);
+        messageDiv.appendChild(messageTime);
+        chatMessages.appendChild(messageDiv);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    // वर्तमान समय प्राप्त करें
+    function getCurrentTime() {
+        const now = new Date();
+        return now.getHours() + ':' + (now.getMinutes() < 10 ? '0' : '') + now.getMinutes();
+    }
+
+    // इवेंट लिसनर्स
+    sendButton.addEventListener('click', sendMessage);
+    chatInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') sendMessage();
+    });
+
+    // डार्क/लाइट मोड टॉगल
+    const modeToggle = document.querySelector('.btn-outline');
+    modeToggle.addEventListener('click', () => {
+        document.body.classList.toggle('dark-mode');
+        modeToggle.innerHTML = document.body.classList.contains('dark-mode') 
+            ? '<i class="fas fa-sun"></i> लाइट मोड' 
+            : '<i class="fas fa-moon"></i> डार्क मोड';
+    });
     </script>
 </body>
 </html>
