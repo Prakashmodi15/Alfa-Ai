@@ -395,8 +395,8 @@
             <div class="logo-text">अल्फा AI</div>
         </div>
         <div class="nav-buttons">
-            <button class="btn"><i class="fas fa-video"></i> वीडियो कॉल</button>
-            <button class="btn btn-outline"><i class="fas fa-moon"></i> डार्क मोड</button>
+            <button class="btn" id="video-call-btn"><i class="fas fa-video"></i> वीडियो कॉल</button>
+            <button class="btn btn-outline" id="dark-mode-btn"><i class="fas fa-moon"></i> डार्क मोड</button>
         </div>
     </header>
 
@@ -450,8 +450,8 @@
                 <div class="chat-header">
                     <div class="chat-title">अल्फा AI सहायक</div>
                     <div class="chat-actions">
-                        <button class="btn btn-outline"><i class="fas fa-expand"></i></button>
-                        <button class="btn btn-outline"><i class="fas fa-cog"></i></button>
+                        <button class="btn btn-outline" id="fullscreen-btn"><i class="fas fa-expand"></i></button>
+                        <button class="btn btn-outline" id="settings-btn"><i class="fas fa-cog"></i></button>
                     </div>
                 </div>
 
@@ -535,9 +535,13 @@
         const sendButton = document.getElementById('send-btn');
         const voiceButton = document.getElementById('voice-btn');
         const videoButton = document.getElementById('video-btn');
+        const videoCallBtn = document.getElementById('video-call-btn');
+        const darkModeBtn = document.getElementById('dark-mode-btn');
+        const fullscreenBtn = document.getElementById('fullscreen-btn');
+        const settingsBtn = document.getElementById('settings-btn');
         const typingIndicator = document.querySelector('.typing-indicator');
 
-        // Add message function
+        // addMessage function
         function addMessage(content, sender) {
             const messageDiv = document.createElement('div');
             messageDiv.classList.add('message', sender + '-message');
@@ -562,53 +566,80 @@
             return now.getHours() + ':' + (now.getMinutes() < 10 ? '0' : '') + now.getMinutes();
         }
 
-        // Chat message send
+        // Send message
         async function sendMessage(message) {
             if (!message) return;
             addMessage(message, 'user');
             chatInput.value = '';
             typingIndicator.style.display = 'block';
-            chatMessages.scrollTop = chatMessages.scrollHeight;
 
             try {
-                const res = await fetch('/api/chat', {
+                const res = await fetch('/api/alfa', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: {'Content-Type':'application/json'},
                     body: JSON.stringify({ message })
                 });
                 const data = await res.json();
+                const reply = data.reply || "माफ़ करें, जवाब नहीं मिला।";
+                addMessage(reply, 'bot');
+                speakText(reply);
+            } catch(err) {
+                addMessage("सर्वर से जवाब नहीं मिला।", 'bot');
+                console.error(err);
+            } finally {
                 typingIndicator.style.display = 'none';
-                addMessage(data.reply || "सर्वर से जवाब नहीं मिला।", 'bot');
-            } catch (e) {
-                typingIndicator.style.display = 'none';
-                addMessage("सर्वर एरर, बाद में कोशिश करें।", 'bot');
-                console.error(e);
             }
         }
 
-        // Voice command
+        // Speech synthesis (bot reply voice)
+        function speakText(text) {
+            if (!('speechSynthesis' in window)) return;
+            const utter = new SpeechSynthesisUtterance(text);
+            utter.lang = 'hi-IN';
+            window.speechSynthesis.speak(utter);
+        }
+
+        // Voice input
         voiceButton.addEventListener('click', () => {
             if (!('webkitSpeechRecognition' in window)) {
-                alert('आपका ब्राउज़र वॉइस को सपोर्ट नहीं करता।');
+                addMessage("वॉइस इनपुट आपके ब्राउज़र में समर्थित नहीं है।", 'bot');
                 return;
             }
             const recognition = new webkitSpeechRecognition();
             recognition.lang = 'hi-IN';
             recognition.start();
             recognition.onresult = (event) => {
-                const voiceMessage = event.results[0][0].transcript;
-                sendMessage(voiceMessage);
+                const speechText = event.results[0][0].transcript;
+                sendMessage(speechText);
+            };
+        });
+
+        // Video call
+        videoCallBtn.addEventListener('click', async () => {
+            addMessage("📹 वीडियो कॉल चालू हो रही है...", 'bot');
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({video:true, audio:true});
+                const video = document.createElement('video');
+                video.srcObject = stream;
+                video.autoplay = true;
+                video.style.width = '100%';
+                video.style.borderRadius = '12px';
+                chatMessages.appendChild(video);
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            } catch(err) {
+                addMessage("वीडियो कॉल चालू नहीं हो पाया।", 'bot');
+                console.error(err);
             }
         });
 
-        // Video / Screen Share command
+        // Screen Share command
         videoButton.addEventListener('click', async () => {
             if (!navigator.mediaDevices.getDisplayMedia) {
                 alert("Screen share supported नहीं है।");
                 return;
             }
             try {
-                const stream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: true });
+                const stream = await navigator.mediaDevices.getDisplayMedia({video:true, audio:true});
                 const videoElem = document.createElement('video');
                 videoElem.srcObject = stream;
                 videoElem.autoplay = true;
@@ -618,15 +649,46 @@
 
                 // Send event to backend if needed
                 await fetch('/api/command', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ action: 'screen_share_started' })
+                    method:'POST',
+                    headers:{'Content-Type':'application/json'},
+                    body:JSON.stringify({action:'screen_share_started'})
                 });
 
-            } catch (err) {
+            } catch(err) {
                 console.error("Screen share error:", err);
                 alert("Screen share failed");
             }
+        });
+
+        // Dark mode toggle
+        darkModeBtn.addEventListener('click', () => {
+            document.body.classList.toggle('dark-mode');
+            if (document.body.classList.contains('dark-mode')) {
+                darkModeBtn.innerHTML = '<i class="fas fa-sun"></i> लाइट मोड';
+            } else {
+                darkModeBtn.innerHTML = '<i class="fas fa-moon"></i> डार्क मोड';
+            }
+        });
+
+        // Fullscreen mode
+        fullscreenBtn.addEventListener('click', () => {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(err => {
+                    console.error(`Fullscreen error: ${err.message}`);
+                });
+                fullscreenBtn.innerHTML = '<i class="fas fa-compress"></i>';
+            } else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                    fullscreenBtn.innerHTML = '<i class="fas fa-expand"></i>';
+                }
+            }
+        });
+
+        // Settings button
+        settingsBtn.addEventListener('click', () => {
+            addMessage("सेटिंग्स मेनू खोला जा रहा है...", 'bot');
+            // Add actual settings functionality here
         });
 
         // Send button click
