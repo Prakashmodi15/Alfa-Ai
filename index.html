@@ -688,16 +688,24 @@ const executeCommand = document.getElementById('executeCommand');
 const cancelCommand = document.getElementById('cancelCommand');
 const typingIndicator = document.querySelector('.typing-indicator');
 
-let recognition = null;
+// Separate SpeechRecognition for input & command
+let voiceInputRecognition = null;
+let voiceCommandRecognition = null;
 if ('webkitSpeechRecognition' in window) {
-    recognition = new webkitSpeechRecognition();
-    recognition.continuous = false;
-    recognition.lang = 'hi-IN';
-    recognition.interimResults = false;
-    recognition.maxAlternatives = 1;
+    voiceInputRecognition = new webkitSpeechRecognition();
+    voiceInputRecognition.continuous = false;
+    voiceInputRecognition.lang = 'hi-IN';
+    voiceInputRecognition.interimResults = false;
+    voiceInputRecognition.maxAlternatives = 1;
+
+    voiceCommandRecognition = new webkitSpeechRecognition();
+    voiceCommandRecognition.continuous = false;
+    voiceCommandRecognition.lang = 'hi-IN';
+    voiceCommandRecognition.interimResults = false;
+    voiceCommandRecognition.maxAlternatives = 1;
 }
 
-// Add message
+// Add chat message
 function addMessage(content, sender) {
     const messageDiv = document.createElement('div');
     messageDiv.classList.add('message', sender + '-message');
@@ -715,9 +723,14 @@ function addMessage(content, sender) {
 
 function getCurrentTime() {
     const now = new Date();
-    return now.getHours() + ':' + (now.getMinutes()<10?'0':'') + now.getMinutes();
+    let hours = now.getHours();
+    const minutes = now.getMinutes()<10?'0'+now.getMinutes():now.getMinutes();
+    const ampm = hours >= 12 ? 'PM' : 'AM';
+    hours = hours % 12 || 12;
+    return hours + ':' + minutes + ' ' + ampm;
 }
 
+// Send message
 async function sendMessage(message) {
     if(!message) return;
     addMessage(message,'user');
@@ -741,8 +754,10 @@ async function sendMessage(message) {
     typingIndicator.style.display='none';
 }
 
+// Speak text
 function speakText(text){
     if(!('speechSynthesis' in window)) return;
+    window.speechSynthesis.cancel();
     const utter = new SpeechSynthesisUtterance(text);
     utter.lang='hi-IN';
     window.speechSynthesis.speak(utter);
@@ -752,12 +767,16 @@ function speakText(text){
 sendButton.addEventListener('click', ()=>sendMessage(chatInput.value));
 chatInput.addEventListener('keypress', (e)=>{if(e.key==='Enter') sendMessage(chatInput.value);});
 
+// Voice Input
 voiceButton.addEventListener('click', ()=>{
-    if(!recognition){addMessage("वॉइस इनपुट समर्थित नहीं है।",'bot'); return;}
-    recognition.start();
-    recognition.onresult = (event)=>{
+    if(!voiceInputRecognition){addMessage("वॉइस इनपुट समर्थित नहीं है।",'bot'); return;}
+    voiceInputRecognition.start();
+    voiceInputRecognition.onresult = (event)=>{
         const speechText = event.results[0][0].transcript;
         chatInput.value = speechText;
+    }
+    voiceInputRecognition.onerror = ()=>{
+        addMessage("वॉइस इनपुट त्रुटि।",'bot');
     }
 });
 
@@ -766,24 +785,24 @@ darkModeBtn.addEventListener('click', ()=>{
     document.body.classList.toggle('dark-mode');
 });
 
-// Voice command
+// Voice Command
 voiceCommandBtn.addEventListener('click', ()=>{
-    if(!recognition){addMessage("वॉइस कमांड समर्थित नहीं है।",'bot'); return;}
+    if(!voiceCommandRecognition){addMessage("वॉइस कमांड समर्थित नहीं है।",'bot'); return;}
     voiceCommandBtn.classList.add('listening');
-    recognition.start();
+    voiceCommandRecognition.start();
 
-    recognition.onresult = (event)=>{
+    voiceCommandRecognition.onresult = (event)=>{
         const command = event.results[0][0].transcript;
         voiceCommandBtn.classList.remove('listening');
         processVoiceCommand(command);
     };
 
-    recognition.onerror = ()=>{
+    voiceCommandRecognition.onerror = ()=>{
         voiceCommandBtn.classList.remove('listening');
         addMessage("वॉइस कमांड त्रुटि।",'bot');
     };
 
-    recognition.onend = ()=>{voiceCommandBtn.classList.remove('listening');}
+    voiceCommandRecognition.onend = ()=>{voiceCommandBtn.classList.remove('listening');}
 });
 
 function processVoiceCommand(command){
@@ -796,15 +815,15 @@ function processVoiceCommand(command){
 function executeAppCommand(command){
     addMessage(`कमांड: ${command}`,'user');
 
-    if(command.match(/WhatsApp|व्हाट्सएप|whatsapp/)){
-        const messageMatch = command.match(/को (.+) भेजो/);
+    if(command.match(/WhatsApp|व्हाट्सएप|whatsapp/i)){
+        const messageMatch = command.match(/को (.+) भेजो/i);
         let message="Hello";
         if(messageMatch){ message=messageMatch[1].trim(); }
         const whatsappUrl=`https://wa.me/?text=${encodeURIComponent(message)}`;
         window.open(whatsappUrl,'_blank');
         addMessage(`WhatsApp message भेजा जा रहा है...`,'bot');
-    } else if(command.match(/YouTube|यूट्यूब|youtube/)){
-        const searchMatch=command.match(/(खोलो|चलाओ) (.+)/);
+    } else if(command.match(/YouTube|यूट्यूब|youtube/i)){
+        const searchMatch=command.match(/(खोलो|चलाओ) (.+)/i);
         if(searchMatch){
             const query=searchMatch[2].trim();
             window.open(`https://www.youtube.com/results?search_query=${encodeURIComponent(query)}`,'_blank');
@@ -813,10 +832,10 @@ function executeAppCommand(command){
             window.open('https://www.youtube.com','_blank');
             addMessage("YouTube खोला जा रहा है...",'bot');
         }
-    } else if(command.match(/Facebook|फेसबुक|facebook/)){
+    } else if(command.match(/Facebook|फेसबुक|facebook/i)){
         window.open('https://www.facebook.com','_blank');
         addMessage("Facebook खोला जा रहा है...",'bot');
-    } else if(command.match(/Instagram|इंस्टाग्राम|instagram/)){
+    } else if(command.match(/Instagram|इंस्टाग्राम|instagram/i)){
         window.open('https://www.instagram.com','_blank');
         addMessage("Instagram खोला जा रहा है...",'bot');
     } else {
@@ -844,7 +863,7 @@ screenShareBtn.addEventListener('click', async ()=>{
                 track.onended=()=>{video.remove(); addMessage("स्क्रीन शेयरिंग बंद हुई",'bot');};
             });
         } else {
-            addMessage("स्क्रीन शेयरिंग समर्थित नहीं है।",'bot');
+            addMessage("आपके डिवाइस में स्क्रीन शेयरिंग समर्थित नहीं है।",'bot');
         }
     } catch(err){
         addMessage("स्क्रीन शेयरिंग त्रुटि: "+err.message,'bot');
