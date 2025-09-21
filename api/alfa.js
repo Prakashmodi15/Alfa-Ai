@@ -19,19 +19,20 @@ export default async function handler(req, res) {
       headers: {
         "Authorization": `Bearer ${process.env.OPENROUTER_API_KEY}`,
         "Content-Type": "application/json",
+        "HTTP-Referer": "https://your-website.com", // Your site URL
+        "X-Title": "Alfa AI Assistant", // Your site name
       },
       body: JSON.stringify({
         model: "deepseek/deepseek-chat",
         messages: [
           {
             role: "system",
-            content:
-              "तुम Alfa AI हो। जवाब हमेशा बहुत छोटा, simple और सीधा होना चाहिए। Extra explanation, अनुवाद या repeat मत करना। सिर्फ वही कहना जो ज़रूरी है।",
+            content: "तुम Alfa AI हो, एक उन्नत AI सहायक। जवाब हमेशा बहुत छोटा, simple और सीधा होना चाहिए। Extra explanation, अनुवाद या repeat मत करना। सिर्फ वही कहना जो ज़रूरी है। आप हिंदी और अंग्रेजी दोनों भाषाओं में जवाब दे सकते हो।"
           },
           { role: "user", content: message },
         ],
-        max_tokens: 80,   // और छोटा करने के लिए
-        temperature: 0.6, // randomness थोड़ी कम
+        max_tokens: 150,
+        temperature: 0.7,
       }),
     });
 
@@ -44,7 +45,7 @@ export default async function handler(req, res) {
         .json({ error: data.error?.message || "OpenRouter API error" });
     }
 
-    const reply = data.choices?.[0]?.message?.content || "No reply from AI";
+    const reply = data.choices?.[0]?.message?.content || "माफ़ करें, इस समय मैं जवाब नहीं दे पा रहा हूं।";
     res.status(200).json({ reply });
   } catch (err) {
     console.error("Backend Error:", err);
