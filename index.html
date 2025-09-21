@@ -1,373 +1,612 @@
 <!DOCTYPE html>
 <html lang="hi">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>🤖 अल्फा AI - हिंदी चैट सहायक</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <style>
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-    
-    body {
-      margin: 0;
-      font-family: 'Segoe UI', 'Arial', 'Nirmala UI', sans-serif;
-      background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-      color: #fff;
-      display: flex;
-      flex-direction: column;
-      height: 100vh;
-      overflow: hidden;
-    }
-    
-    header {
-      background: rgba(30, 41, 59, 0.95);
-      padding: 15px;
-      text-align: center;
-      font-weight: bold;
-      font-size: 1.5rem;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 10px;
-      z-index: 10;
-    }
-    
-    .logo {
-      width: 40px;
-      height: 40px;
-      background: #3b82f6;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    
-    #chat {
-      flex: 1;
-      overflow-y: auto;
-      padding: 20px;
-      display: flex;
-      flex-direction: column;
-      gap: 15px;
-      background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><rect fill="%231e293b" width="100" height="100"/><path fill="%230f172a" d="M0 50 L100 50 M50 0 L50 100" stroke-width="0.5"/></svg>');
-      background-size: 30px 30px;
-    }
-    
-    .msg {
-      padding: 12px 16px;
-      border-radius: 18px;
-      max-width: 80%;
-      word-wrap: break-word;
-      position: relative;
-      line-height: 1.5;
-      animation: fadeIn 0.3s ease;
-    }
-    
-    .user {
-      background: #3b82f6;
-      margin-left: auto;
-      border-bottom-right-radius: 5px;
-      box-shadow: 0 4px 8px rgba(59, 130, 246, 0.3);
-    }
-    
-    .bot {
-      background: #475569;
-      margin-right: auto;
-      border-bottom-left-radius: 5px;
-      box-shadow: 0 4px 8px rgba(71, 85, 105, 0.3);
-    }
-    
-    .time {
-      font-size: 0.7rem;
-      opacity: 0.7;
-      text-align: right;
-      margin-top: 5px;
-    }
-    
-    .typing-indicator {
-      background: #475569;
-      padding: 12px 16px;
-      border-radius: 18px;
-      width: fit-content;
-      margin-right: auto;
-      margin-bottom: 5px;
-      display: none;
-      border-bottom-left-radius: 5px;
-    }
-    
-    .typing-dots {
-      display: flex;
-      gap: 4px;
-    }
-    
-    .typing-dot {
-      width: 8px;
-      height: 8px;
-      background: rgba(255, 255, 255, 0.6);
-      border-radius: 50%;
-      animation: typingAnimation 1.4s infinite ease-in-out;
-    }
-    
-    .typing-dot:nth-child(1) { animation-delay: 0s; }
-    .typing-dot:nth-child(2) { animation-delay: 0.2s; }
-    .typing-dot:nth-child(3) { animation-delay: 0.4s; }
-    
-    footer {
-      display: flex;
-      padding: 15px;
-      background: rgba(30, 41, 59, 0.95);
-      gap: 10px;
-      box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.1);
-      z-index: 10;
-    }
-    
-    #msg {
-      flex: 1;
-      padding: 12px 16px;
-      border: none;
-      border-radius: 24px;
-      outline: none;
-      background: #1e293b;
-      color: white;
-      font-size: 1rem;
-      box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
-    }
-    
-    #msg::placeholder {
-      color: #94a3b8;
-    }
-    
-    button {
-      padding: 12px 20px;
-      border: none;
-      border-radius: 24px;
-      background: #3b82f6;
-      color: #fff;
-      cursor: pointer;
-      font-weight: bold;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      transition: all 0.2s ease;
-      box-shadow: 0 4px 8px rgba(59, 130, 246, 0.3);
-    }
-    
-    button:hover {
-      background: #2563eb;
-      transform: translateY(-2px);
-    }
-    
-    button:active {
-      transform: translateY(0);
-    }
-    
-    .welcome-msg {
-      text-align: center;
-      padding: 20px;
-      background: rgba(71, 85, 105, 0.2);
-      border-radius: 16px;
-      margin: 10px 0;
-      animation: fadeIn 1s ease;
-    }
-    
-    .welcome-msg h3 {
-      margin-bottom: 10px;
-      color: #3b82f6;
-    }
-    
-    .suggestions {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      margin: 15px 0;
-    }
-    
-    .suggestion {
-      background: rgba(71, 85, 105, 0.3);
-      padding: 8px 16px;
-      border-radius: 16px;
-      font-size: 0.9rem;
-      cursor: pointer;
-      transition: all 0.2s ease;
-    }
-    
-    .suggestion:hover {
-      background: rgba(59, 130, 246, 0.3);
-      transform: translateY(-2px);
-    }
-    
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(10px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-    
-    @keyframes typingAnimation {
-      0%, 100% { transform: scale(1); opacity: 0.6; }
-      50% { transform: scale(1.2); opacity: 1; }
-    }
-    
-    /* Responsive design */
-    @media (max-width: 768px) {
-      .msg {
-        max-width: 90%;
-      }
-      
-      header {
-        font-size: 1.2rem;
-        padding: 12px;
-      }
-      
-      footer {
-        padding: 12px;
-      }
-      
-      button span {
-        display: none;
-      }
-      
-      button {
-        padding: 12px;
-      }
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>अल्फा AI - पूर्ण सुविधाओं वाला चैट</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #3b82f6;
+            --secondary: #2563eb;
+            --dark: #1e293b;
+            --light: #f8fafc;
+            --gray: #94a3b8;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --user-msg: #3b82f6;
+            --bot-msg: #475569;
+        }
+
+        .dark-mode {
+            --primary: #3b82f6;
+            --secondary: #60a5fa;
+            --dark: #0f172a;
+            --light: #1e293b;
+            --gray: #64748b;
+            --user-msg: #2563eb;
+            --bot-msg: #374151;
+            --text-color: #f1f5f9;
+            --card-bg: #1e293b;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            background: rgba(30, 41, 59, 0.95);
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background: var(--primary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+
+        .logo-text {
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 20px;
+            background: var(--primary);
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-weight: 500;
+        }
+
+        .btn:hover {
+            opacity: 0.9;
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 1px solid var(--primary);
+            color: var(--primary);
+        }
+
+        .main-content {
+            display: flex;
+            gap: 20px;
+            margin-top: 20px;
+            flex: 1;
+        }
+
+        .sidebar {
+            width: 250px;
+            background: rgba(30, 41, 59, 0.8);
+            border-radius: 12px;
+            padding: 15px;
+            height: fit-content;
+        }
+
+        .sidebar-section {
+            margin-bottom: 20px;
+        }
+
+        .sidebar-title {
+            font-size: 1rem;
+            margin-bottom: 10px;
+            color: var(--gray);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .feature-list {
+            list-style: none;
+        }
+
+        .feature-item {
+            padding: 8px 10px;
+            border-radius: 8px;
+            margin-bottom: 5px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .feature-item:hover {
+            background: rgba(59, 130, 246, 0.2);
+        }
+
+        .feature-item.active {
+            background: rgba(59, 130, 246, 0.3);
+            font-weight: 500;
+        }
+
+        .chat-container {
+            flex: 1;
+            background: rgba(30, 41, 59, 0.8);
+            border-radius: 12px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            height: 75vh;
+        }
+
+        .chat-header {
+            padding: 15px 20px;
+            background: rgba(15, 23, 42, 0.5);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .chat-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+
+        .chat-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .message {
+            max-width: 70%;
+            padding: 12px 16px;
+            border-radius: 18px;
+            position: relative;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .user-message {
+            background: var(--user-msg);
+            align-self: flex-end;
+            border-bottom-right-radius: 5px;
+        }
+
+        .bot-message {
+            background: var(--bot-msg);
+            align-self: flex-start;
+            border-bottom-left-radius: 5px;
+        }
+
+        .message-content {
+            word-wrap: break-word;
+        }
+
+        .message-time {
+            font-size: 0.7rem;
+            opacity: 0.7;
+            text-align: right;
+            margin-top: 5px;
+        }
+
+        .typing-indicator {
+            background: var(--bot-msg);
+            padding: 12px 16px;
+            border-radius: 18px;
+            width: fit-content;
+            margin-bottom: 5px;
+            display: none;
+            border-bottom-left-radius: 5px;
+        }
+
+        .typing-dots {
+            display: flex;
+            gap: 4px;
+        }
+
+        .typing-dot {
+            width: 8px;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.6);
+            border-radius: 50%;
+            animation: typingAnimation 1.4s infinite ease-in-out;
+        }
+
+        .typing-dot:nth-child(1) { animation-delay: 0s; }
+        .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+        .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+        .chat-input-container {
+            padding: 15px;
+            background: rgba(15, 23, 42, 0.5);
+            display: flex;
+            gap: 10px;
+        }
+
+        .chat-input {
+            flex: 1;
+            padding: 12px 16px;
+            border: none;
+            border-radius: 24px;
+            outline: none;
+            background: #1e293b;
+            color: white;
+            font-size: 1rem;
+        }
+
+        .input-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .action-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--primary);
+            color: white;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+
+        .feature-card {
+            background: rgba(30, 41, 59, 0.8);
+            border-radius: 12px;
+            padding: 20px;
+            transition: transform 0.2s;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .feature-card h3 {
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .feature-card p {
+            color: var(--gray);
+            line-height: 1.5;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 0.7rem;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+
+        .badge-new {
+            background: var(--success);
+        }
+
+        .badge-popular {
+            background: var(--warning);
+        }
+
+        .badge-pro {
+            background: var(--danger);
+        }
+
+        footer {
+            text-align: center;
+            padding: 20px;
+            margin-top: 40px;
+            background: rgba(30, 41, 59, 0.95);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes typingAnimation {
+            0%, 100% { transform: scale(1); opacity: 0.6; }
+            50% { transform: scale(1.2); opacity: 1; }
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                flex-direction: column;
+            }
+            
+            .sidebar {
+                width: 100%;
+            }
+            
+            .message {
+                max-width: 85%;
+            }
+            
+            .features-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
 </head>
 <body>
-  <header>
-    <div class="logo"><i class="fas fa-robot"></i></div>
-    <div>अल्फा AI - हिंदी चैट सहायक</div>
-  </header>
-  
-  <div id="chat">
-    <div class="welcome-msg">
-      <h3>अल्फा AI में आपका स्वागत है!</h3>
-      <p>मैं आपकी किस प्रकार सहायता कर सकता हूं? नीचे दिए गए विकल्पों में से चुनें या अपना प्रश्न टाइप करें</p>
-    </div>
-    
-    <div class="suggestions">
-      <div class="suggestion" onclick="sendSuggestion('तुम्हारा नाम क्या है?')">तुम्हारा नाम क्या है?</div>
-      <div class="suggestion" onclick="sendSuggestion('तुम कैसे हो?')">तुम कैसे हो?</div>
-      <div class="suggestion" onclick="sendSuggestion('मौसम कैसा है?')">मौसम कैसा है?</div>
-      <div class="suggestion" onclick="sendSuggestion('क्या तुम मेरी मदद कर सकते हो?')">क्या तुम मेरी मदद कर सकते हो?</div>
-    </div>
-  </div>
-  
-  <div class="typing-indicator">
-    <div class="typing-dots">
-      <div class="typing-dot"></div>
-      <div class="typing-dot"></div>
-      <div class="typing-dot"></div>
-    </div>
-  </div>
-  
-  <footer>
-    <input id="msg" placeholder="अपना संदेश यहाँ टाइप करें..." />
-    <button onclick="sendMsg()">
-      <i class="fas fa-paper-plane"></i>
-      <span>भेजें</span>
-    </button>
-  </footer>
+    <header>
+        <div class="logo">
+            <div class="logo-icon">
+                <i class="fas fa-robot"></i>
+            </div>
+            <div class="logo-text">अल्फा AI</div>
+        </div>
+        <div class="nav-buttons">
+            <button class="btn"><i class="fas fa-video"></i> वीडियो कॉल</button>
+            <button class="btn btn-outline"><i class="fas fa-moon"></i> डार्क मोड</button>
+        </div>
+    </header>
 
-  <script>
-    const chat = document.getElementById("chat");
-    const input = document.getElementById("msg");
-    const typingIndicator = document.querySelector(".typing-indicator");
-    
-    // Add initial bot message
-    appendMsg("नमस्ते! मैं अल्फा AI हूं। आपकी क्या सहायता कर सकता हूं?", "bot");
-    
-    function appendMsg(text, cls) {
-      const msgDiv = document.createElement("div");
-      msgDiv.className = `msg ${cls}`;
-      
-      // Add message content
-      const content = document.createElement("div");
-      content.textContent = text;
-      msgDiv.appendChild(content);
-      
-      // Add timestamp
-      const time = document.createElement("div");
-      time.className = "time";
-      time.textContent = getCurrentTime();
-      msgDiv.appendChild(time);
-      
-      chat.appendChild(msgDiv);
-      
-      // Auto scroll to bottom
-      setTimeout(() => {
-        chat.scrollTop = chat.scrollHeight;
-      }, 100);
-    }
-    
-    function getCurrentTime() {
-      const now = new Date();
-      return `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
-    }
-    
-    function showTypingIndicator() {
-      typingIndicator.style.display = "block";
-      chat.scrollTop = chat.scrollHeight;
-    }
-    
-    function hideTypingIndicator() {
-      typingIndicator.style.display = "none";
-    }
-    
-    function sendMsg() {
-      const text = input.value.trim();
-      if (!text) return;
-      
-      appendMsg(text, "user");
-      input.value = "";
-      
-      // Show typing indicator
-      showTypingIndicator();
-      
-      // Simulate API call with timeout
-      setTimeout(() => {
-        hideTypingIndicator();
-        reply(text);
-      }, 1500);
-    }
-    
-    function sendSuggestion(text) {
-      input.value = text;
-      sendMsg();
-    }
-    
-    function reply(text) {
-      let response = "मुझे समझ नहीं आया। कृपया दोबारा प्रयास करें।";
-      
-      // Hindi responses
-      if (text.includes("नमस्ते") || text.includes("hello") || text.includes("hi") || text.includes("hy")) {
-        response = "नमस्ते! 😊 मैं अल्फा AI हूं, आपकी क्या सहायता कर सकता हूं?";
-      } else if (text.includes("कैसे") || text.includes("how")) {
-        response = "मैं बिल्कुल ठीक हूँ, धन्यवाद! आप कैसे हैं?";
-      } else if (text.includes("नाम") || text.includes("name")) {
-        response = "मेरा नाम अल्फा AI है 🤖";
-      } else if (text.includes("मौसम") || text.includes("weather")) {
-        response = "मैं वेब एक्सेस नहीं कर सकता, लेकिन आप बाहर देख सकते हैं! 😊";
-      } else if (text.includes("मदद") || text.includes("help")) {
-        response = "जी हाँ, मैं आपकी मदद कर सकता हूं। कृपया अपना प्रश्न पूछें।";
-      } else if (text.includes("धन्यवाद") || text.includes("thank")) {
-        response = "आपका स्वागत है! 😊 क्या मैं आपकी और किसी बात में मदद कर सकता हूं?";
-      }
-      
-      appendMsg(response, "bot");
-    }
-    
-    input.addEventListener("keydown", e => {
-      if (e.key === "Enter") sendMsg();
-    });
-    
-    // Focus input on load
-    window.addEventListener("load", () => {
-      input.focus();
-    });
-  </script>
+    <div class="container">
+        <div class="main-content">
+            <div class="sidebar">
+                <div class="sidebar-section">
+                    <div class="sidebar-title">
+                        <i class="fas fa-language"></i>
+                        <span>भाषा सेटिंग</span>
+                    </div>
+                    <ul class="feature-list">
+                        <li class="feature-item active">
+                            <i class="fas fa-check-circle"></i>
+                            <span>हिंदी (मुख्य)</span>
+                        </li>
+                        <li class="feature-item">
+                            <i class="fas fa-globe"></i>
+                            <span>अंग्रेजी</span>
+                        </li>
+                        <li class="feature-item">
+                            <i class="fas fa-globe"></i>
+                            <span>अन्य भाषाएं</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="sidebar-section">
+                    <div class="sidebar-title">
+                        <i class="fas fa-star"></i>
+                        <span>लोकप्रिय सुविधाएं</span>
+                    </div>
+                    <ul class="feature-list">
+                        <li class="feature-item">
+                            <i class="fas fa-microphone"></i>
+                            <span>वॉइस चैट</span>
+                        </li>
+                        <li class="feature-item">
+                            <i class="fas fa-video"></i>
+                            <span>वीडियो कॉल</span>
+                        </li>
+                        <li class="feature-item">
+                            <i class="fas fa-phone-volume"></i>
+                            <span>वॉइस कमांड</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="chat-container">
+                <div class="chat-header">
+                    <div class="chat-title">अल्फा AI सहायक</div>
+                    <div class="chat-actions">
+                        <button class="btn btn-outline"><i class="fas fa-expand"></i></button>
+                        <button class="btn btn-outline"><i class="fas fa-cog"></i></button>
+                    </div>
+                </div>
+
+                <div class="chat-messages">
+                    <div class="message bot-message">
+                        <div class="message-content">नमस्ते! मैं अल्फा AI हूं। आज मैं आपकी किस प्रकार सहायता कर सकता हूं?</div>
+                        <div class="message-time">12:30 PM</div>
+                    </div>
+
+                    <div class="message user-message">
+                        <div class="message-content">मुझे अपनी AI ऐप के लिए सभी 100+ फीचर्स की जानकारी चाहिए</div>
+                        <div class="message-time">12:31 PM</div>
+                    </div>
+
+                    <div class="message bot-message">
+                        <div class="message-content">बिल्कुल! मैं आपको सभी 100+ फीचर्स की जानकारी दूंगा। नीचे आपके लिए एक व्यापक सुविधा सूची तैयार की गई है।</div>
+                        <div class="message-time">12:32 PM</div>
+                    </div>
+
+                    <div class="typing-indicator">
+                        <div class="typing-dots">
+                            <div class="typing-dot"></div>
+                            <div class="typing-dot"></div>
+                            <div class="typing-dot"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="chat-input-container">
+                    <input type="text" class="chat-input" placeholder="अपना संदेश यहाँ टाइप करें...">
+                    <div class="input-actions">
+                        <button class="action-btn"><i class="fas fa-paper-plane"></i></button>
+                        <button class="action-btn"><i class="fas fa-microphone"></i></button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="features-grid">
+            <div class="feature-card">
+                <h3><i class="fas fa-language"></i> मल्टी-लैंग्वेज सपोर्ट <span class="badge badge-new">NEW</span></h3>
+                <p>हिंदी, अंग्रेजी और 20+ अंतर्राष्ट्रीय भाषाओं में समर्थन। स्वचालित भाषा पहचान।</p>
+            </div>
+
+            <div class="feature-card">
+                <h3><i class="fas fa-microphone"></i> वॉइस इनपुट/आउटपुट <span class="badge badge-popular">POPULAR</span></h3>
+                <p>स्पीच-टू-टेक्स्ट और टेक्स्ट-टू-स्पीच तकनीक। वॉइस कमांड और वॉइस अनुवाद।</p>
+            </div>
+
+            <div class="feature-card">
+                <h3><i class="fas fa-video"></i> वीडियो कॉलिंग <span class="badge badge-pro">PRO</span></h3>
+                <p>उच्च गुणवत्ता वाली वीडियो कॉल, रिकॉर्डिंग, और स्क्रीन शेयरिंग सुविधाएं।</p>
+            </div>
+
+            <div class="feature-card">
+                <h3><i class="fas fa-comment-dots"></i> स्मार्ट चैट <span class="badge badge-new">NEW</span></h3>
+                <p>भावना पहचान, संदर्भ जागरूकता, और व्यक्तिगत प्रतिक्रियाएं।</p>
+            </div>
+
+            <div class="feature-card">
+                <h3><i class="fas fa-mobile-alt"></i> मोबाइल अनुकूल <span class="badge badge-popular">POPULAR</span></h3>
+                <p>पूरी तरह से उत्तरदायी डिजाइन जो सभी डिवाइसों पर काम करता है।</p>
+            </div>
+
+            <div class="feature-card">
+                <h3><i class="fas fa-shield-alt"></i> उन्नत सुरक्षा <span class="badge badge-pro">PRO</span></h3>
+                <p>एंड-टू-एंड एन्क्रिप्शन, उपयोगकर्ता प्रमाणीकरण, और डेटा सुरक्षा।</p>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>© 2023 अल्फा AI - सभी अधिकार सुरक्षित | 100+ उन्नत सुविधाओं के साथ</p>
+    </footer>
+
+    <script>
+        // चैट फ़ंक्शनलिटी
+        const chatMessages = document.querySelector('.chat-messages');
+        const chatInput = document.querySelector('.chat-input');
+        const sendButton = document.querySelector('.action-btn:first-child');
+        const typingIndicator = document.querySelector('.typing-indicator');
+
+        // संदेश भेजने का फ़ंक्शन
+        function sendMessage() {
+            const message = chatInput.value.trim();
+            if (!message) return;
+
+            // उपयोगकर्ता का संदेश जोड़ें
+            addMessage(message, 'user');
+            chatInput.value = '';
+
+            // टाइपिंग इंडिकेटर दिखाएं
+            typingIndicator.style.display = 'block';
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+
+            // बॉट की प्रतिक्रिया (नकली AI)
+            setTimeout(() => {
+                typingIndicator.style.display = 'none';
+                let botResponse = "मैं इस प्रश्न का उत्तर देने के लिए तैयार हूं। कृपया अपनी query विस्तार से बताएं।";
+                
+                if (message.includes('फीचर') || message.includes('सुविधा')) {
+                    botResponse = "मेरे पास 100+ उन्नत सुविधाएं हैं जिनमें मल्टी-लैंग्वेज सपोर्ट, वॉइस चैट, वीडियो कॉल, स्मार्ट रेस्पॉन्स और बहुत कुछ शामिल है!";
+                } else if (message.includes('नाम')) {
+                    botResponse = "मेरा नाम अल्फा AI है और मैं एक उन्नत आर्टिफिशियल इंटेलिजेंस सहायक हूं।";
+                }
+                
+                addMessage(botResponse, 'bot');
+            }, 2000);
+        }
+
+        // संदेश जोड़ने का फ़ंक्शन
+        function addMessage(content, sender) {
+            const messageDiv = document.createElement('div');
+            messageDiv.classList.add('message');
+            messageDiv.classList.add(sender + '-message');
+            
+            const messageContent = document.createElement('div');
+            messageContent.classList.add('message-content');
+            messageContent.textContent = content;
+            
+            const messageTime = document.createElement('div');
+            messageTime.classList.add('message-time');
+            messageTime.textContent = getCurrentTime();
+            
+            messageDiv.appendChild(messageContent);
+            messageDiv.appendChild(messageTime);
+            
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        // वर्तमान समय प्राप्त करें
+        function getCurrentTime() {
+            const now = new Date();
+            return now.getHours() + ':' + (now.getMinutes() < 10 ? '0' : '') + now.getMinutes();
+        }
+
+        // इवेंट लिसनर्स
+        sendButton.addEventListener('click', sendMessage);
+        chatInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+
+        // डार्क/लाइट मोड टॉगल
+        const modeToggle = document.querySelector('.btn-outline');
+        modeToggle.addEventListener('click', () => {
+            document.body.classList.toggle('dark-mode');
+            if (document.body.classList.contains('dark-mode')) {
+                modeToggle.innerHTML = '<i class="fas fa-sun"></i> लाइट मोड';
+            } else {
+                modeToggle.innerHTML = '<i class="fas fa-moon"></i> डार्क मोड';
+            }
+        });
+    </script>
 </body>
 </html>
