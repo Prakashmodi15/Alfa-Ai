@@ -528,83 +528,107 @@
     </footer>
 
     <script>
-    const chatMessages = document.querySelector('.chat-messages');
-    const chatInput = document.querySelector('.chat-input');
-    const sendButton = document.querySelector('.action-btn:first-child');
-    const typingIndicator = document.querySelector('.typing-indicator');
+const chatMessages = document.querySelector('.chat-messages');
+const chatInput = document.querySelector('.chat-input');
+const sendBtn = document.querySelector('.action-btn:first-child');
+const voiceBtn = document.querySelector('.input-actions .action-btn:last-child');
+const videoBtn = document.querySelector('.nav-buttons .btn:first-child');
+const typingIndicator = document.querySelector('.typing-indicator');
 
-    // संदेश भेजने का फ़ंक्शन
-    async function sendMessage() {
-        const message = chatInput.value.trim();
-        if (!message) return;
+// addMessage function
+function addMessage(content, sender) {
+    const messageDiv = document.createElement('div');
+    messageDiv.classList.add('message', sender + '-message');
 
-        // उपयोगकर्ता का संदेश जोड़ें
-        addMessage(message, 'user');
-        chatInput.value = '';
+    const messageContent = document.createElement('div');
+    messageContent.classList.add('message-content');
+    messageContent.textContent = content;
 
-        // टाइपिंग इंडिकेटर दिखाएं
-        typingIndicator.style.display = 'block';
+    const messageTime = document.createElement('div');
+    messageTime.classList.add('message-time');
+    messageTime.textContent = getCurrentTime();
+
+    messageDiv.appendChild(messageContent);
+    messageDiv.appendChild(messageTime);
+    chatMessages.appendChild(messageDiv);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+
+// get current time
+function getCurrentTime() {
+    const now = new Date();
+    return now.getHours() + ':' + (now.getMinutes() < 10 ? '0' : '') + now.getMinutes();
+}
+
+// Send message
+async function sendMessage(message) {
+    if (!message) return;
+    addMessage(message, 'user');
+    chatInput.value = '';
+    typingIndicator.style.display = 'block';
+
+    try {
+        const res = await fetch('/api/alfa', {
+            method: 'POST',
+            headers: {'Content-Type':'application/json'},
+            body: JSON.stringify({ message })
+        });
+        const data = await res.json();
+        const reply = data.reply || "माफ़ करें, जवाब नहीं मिला।";
+        addMessage(reply, 'bot');
+        speakText(reply);
+    } catch(err) {
+        addMessage("सर्वर से जवाब नहीं मिला।", 'bot');
+        console.error(err);
+    } finally {
+        typingIndicator.style.display = 'none';
+    }
+}
+
+// Speech synthesis (bot reply voice)
+function speakText(text) {
+    if (!('speechSynthesis' in window)) return;
+    const utter = new SpeechSynthesisUtterance(text);
+    utter.lang = 'hi-IN';
+    window.speechSynthesis.speak(utter);
+}
+
+// Event listeners
+sendBtn.addEventListener('click', () => sendMessage(chatInput.value));
+chatInput.addEventListener('keypress', (e) => { if(e.key==='Enter') sendMessage(chatInput.value); });
+
+// Voice input
+voiceBtn.addEventListener('click', () => {
+    if (!('webkitSpeechRecognition' in window)) {
+        addMessage("वॉइस इनपुट आपके ब्राउज़र में समर्थित नहीं है।", 'bot');
+        return;
+    }
+    const recognition = new webkitSpeechRecognition();
+    recognition.lang = 'hi-IN';
+    recognition.start();
+    recognition.onresult = (event) => {
+        const speechText = event.results[0][0].transcript;
+        sendMessage(speechText);
+    };
+});
+
+// Video call
+videoBtn.addEventListener('click', async () => {
+    addMessage("📹 वीडियो कॉल चालू हो रही है...", 'bot');
+    try {
+        const stream = await navigator.mediaDevices.getUserMedia({video:true, audio:true});
+        const video = document.createElement('video');
+        video.srcObject = stream;
+        video.autoplay = true;
+        video.style.width = '100%';
+        video.style.borderRadius = '12px';
+        chatMessages.appendChild(video);
         chatMessages.scrollTop = chatMessages.scrollHeight;
-
-        try {
-            // API कॉल करें - अब api/alfa.js का उपयोग करेगा
-            const response = await fetch('/api/alfa', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ message })
-            });
-
-            const data = await response.json();
-            const botReply = data.reply || "माफ़ करें, इस समय मैं जवाब नहीं दे पा रहा हूं।";
-
-            typingIndicator.style.display = 'none';
-            addMessage(botReply, 'bot');
-        } catch (error) {
-            typingIndicator.style.display = 'none';
-            addMessage("सर्वर से जवाब नहीं मिल पाया। कृपया बाद में कोशिश करें।", 'bot');
-            console.error("Alfa API Error:", error);
-        }
+    } catch(err) {
+        addMessage("वीडियो कॉल चालू नहीं हो पाया।", 'bot');
+        console.error(err);
     }
-
-    // संदेश जोड़ने का फ़ंक्शन
-    function addMessage(content, sender) {
-        const messageDiv = document.createElement('div');
-        messageDiv.classList.add('message', sender + '-message');
-
-        const messageContent = document.createElement('div');
-        messageContent.classList.add('message-content');
-        messageContent.textContent = content;
-
-        const messageTime = document.createElement('div');
-        messageTime.classList.add('message-time');
-        messageTime.textContent = getCurrentTime();
-
-        messageDiv.appendChild(messageContent);
-        messageDiv.appendChild(messageTime);
-        chatMessages.appendChild(messageDiv);
-        chatMessages.scrollTop = chatMessages.scrollHeight;
-    }
-
-    // वर्तमान समय प्राप्त करें
-    function getCurrentTime() {
-        const now = new Date();
-        return now.getHours() + ':' + (now.getMinutes() < 10 ? '0' : '') + now.getMinutes();
-    }
-
-    // इवेंट लिसनर्स
-    sendButton.addEventListener('click', sendMessage);
-    chatInput.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') sendMessage();
-    });
-
-    // डार्क/लाइट मोड टॉगल
-    const modeToggle = document.querySelector('.btn-outline');
-    modeToggle.addEventListener('click', () => {
-        document.body.classList.toggle('dark-mode');
-        modeToggle.innerHTML = document.body.classList.contains('dark-mode') 
-            ? '<i class="fas fa-sun"></i> लाइट मोड' 
-            : '<i class="fas fa-moon"></i> डार्क मोड';
-    });
-    </script>
+});
+</script>
 </body>
 </html>
