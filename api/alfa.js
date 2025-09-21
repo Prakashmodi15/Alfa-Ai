@@ -21,17 +21,17 @@ export default async function handler(req, res) {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "deepseek/deepseek-chat", // ✅ सही मॉडल
+        model: "deepseek/deepseek-chat",
         messages: [
           {
             role: "system",
             content:
-              "तुम एक friendly और helpful chatbot हो जिसका नाम Alfa AI है। केवल ज़रूरी और छोटे जवाब दो, extra explanation मत दो।",
+              "तुम Alfa AI हो। जवाब हमेशा बहुत छोटा, simple और सीधा होना चाहिए। Extra explanation, अनुवाद या repeat मत करना। सिर्फ वही कहना जो ज़रूरी है।",
           },
           { role: "user", content: message },
         ],
-        max_tokens: 150, // ✅ जवाब छोटा रखने के लिए
-        temperature: 0.7,
+        max_tokens: 80,   // और छोटा करने के लिए
+        temperature: 0.6, // randomness थोड़ी कम
       }),
     });
 
