@@ -838,183 +838,186 @@
                     if (contactMatch && messageMatch) {
                         contact = contactMatch[1].trim();
                         message = messageMatch[1].trim();
-                    }
-                    
-                    // Open WhatsApp with pre-filled message
-                    const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message)}`;
-                    window.open(whatsappUrl, '_blank');
-                    
-                    addMessage(`WhatsApp पर ${contact} को "${message}" भेजा जा रहा है...`, 'bot');
-                    speakText(`WhatsApp message sent to ${contact}`);
-                }
-                else if (command.includes('खोलो') || command.includes('open')) {
-                    window.open('https://web.whatsapp.com', '_blank');
-                    addMessage("WhatsApp खोला जा रहा है...", 'bot');
-                }
-            }
-            // YouTube commands
-            else if (command.includes('YouTube') || command.includes('यूट्यूब') || command.includes('youtube')) {
-                if (command.includes('खोलो') || command.includes('चलाओ') || command.includes('open')) {
-                    const searchMatch = command.match(/चलाओ (.+)/) || command.match(/खोलो (.+)/) || command.match(/open (.+)/);
-                    if (searchMatch) {
-                        const query = searchMatch[1].trim();
-                        const youtubeUrl = `https://www.youtube.com/results?search_query=${encodeURIComponent(query)}`;
-                        window.open(youtubeUrl, '_blank');
-                        addMessage(`YouTube पर "${query}" खोला जा रहा है...`, 'bot');
-                    } else {
-                        window.open('https://www.youtube.com', '_blank');
-                        addMessage("YouTube खोला जा रहा है...", 'bot');
-                    }
-                }
-            }
-            // Call commands
-            else if (command.includes('कॉल') || command.includes('call')) {
-                const contactMatch = command.match(/([A-Za-z0-9 ]+) को कॉल/) || command.match(/call ([A-Za-z0-9 ]+)/);
-                if (contactMatch) {
-                    const contact = contactMatch[1].trim();
-                    // This would normally open the dialer with the number
-                    addMessage(`${contact} को कॉल किया जा रहा है...`, 'bot');
-                    speakText(`Calling ${contact}`);
-                } else {
-                    addMessage("कृपया सही फॉर्मेट में बोलें: '[नाम] को कॉल करो'", 'bot');
-                }
-            }
-            // Facebook commands
-            else if (command.includes('Facebook') || command.includes('फेसबुक') || command.includes('facebook')) {
-                window.open('https://www.facebook.com', '_blank');
-                addMessage("Facebook खोला जा रहा है...", 'bot');
-            }
-            // Instagram commands
-            else if (command.includes('Instagram') || command.includes('इंस्टाग्राम') || command.includes('instagram')) {
-                window.open('https://www.instagram.com', '_blank');
-                addMessage("Instagram खोला जा रहा है...", 'bot');
-            }
-            // Default response
-            else {
-                addMessage("मैंने आपकी कमांड समझी: " + command + ". लेकिन मैं अभी इस प्रकार की कमांड को प्रोसेस नहीं कर सकता।", 'bot');
-            }
-        }
+<script>
+const chatMessages = document.querySelector('.chat-messages');
+const chatInput = document.querySelector('.chat-input');
+const sendButton = document.getElementById('send-btn');
+const voiceButton = document.getElementById('voice-btn');
+const videoButton = document.getElementById('video-btn');
+const videoCallBtn = document.getElementById('video-call-btn');
+const darkModeBtn = document.getElementById('dark-mode-btn');
+const fullscreenBtn = document.getElementById('fullscreen-btn');
+const settingsBtn = document.getElementById('settings-btn');
+const typingIndicator = document.querySelector('.typing-indicator');
+const voiceCommandBtn = document.getElementById('voiceCommandBtn');
+const screenShareBtn = document.getElementById('screenShareBtn');
+const commandOutput = document.getElementById('commandOutput');
+const commandText = document.getElementById('commandText');
+const executeCommand = document.getElementById('executeCommand');
+const cancelCommand = document.getElementById('cancelCommand');
 
-        // Screen sharing
-        screenShareBtn.addEventListener('click', async () => {
-            try {
-                addMessage("स्क्रीन शेयरिंग शुरू की जा रही है...", 'bot');
-                
-                if (navigator.mediaDevices && navigator.mediaDevices.getDisplayMedia) {
-                    const stream = await navigator.mediaDevices.getDisplayMedia({ 
-                        video: true,
-                        audio: true 
-                    });
-                    
-                    const video = document.createElement('video');
-                    video.srcObject = stream;
-                    video.autoplay = true;
-                    video.style.width = '100%';
-                    video.style.maxHeight = '300px';
-                    video.style.borderRadius = '12px';
-                    video.style.marginTop = '10px';
-                    
-                    // Add to chat
-                    chatMessages.appendChild(video);
-                    chatMessages.scrollTop = chatMessages.scrollHeight;
-                    
-                    addMessage("स्क्रीन शेयरिंग शुरू हुई...", 'bot');
-                    
-                    // Stop sharing when the track ends
-                    stream.getTracks().forEach(track => {
-                        track.onended = () => {
-                            video.remove();
-                            addMessage("स्क्रीन शेयरिंग बंद हुई", 'bot');
-                        };
-                    });
-                } else {
-                    addMessage("स्क्रीन शेयरिंग आपके ब्राउज़र में समर्थित नहीं है।", 'bot');
-                }
-            } catch (error) {
-                console.error('Screen sharing failed:', error);
-                addMessage("स्क्रीन शेयरिंग में त्रुटि: " + error.message, 'bot');
-            }
-        });
+// Speech recognition setup
+let recognition = null;
+if ('webkitSpeechRecognition' in window) {
+    recognition = new webkitSpeechRecognition();
+    recognition.continuous = false;
+    recognition.lang = 'hi-IN';
+    recognition.interimResults = false;
+    recognition.maxAlternatives = 1;
+} else {
+    console.warn("Web Speech API not supported in this browser");
+}
 
-        // Video call
-        videoCallBtn.addEventListener('click', async () => {
-            addMessage("📹 वीडियो कॉल चालू हो रही है...", 'bot');
-            try {
-                if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-                    const stream = await navigator.mediaDevices.getUserMedia({video:true, audio:true});
-                    const video = document.createElement('video');
-                    video.srcObject = stream;
-                    video.autoplay = true;
-                    video.style.width = '100%';
-                    video.style.borderRadius = '12px';
-                    chatMessages.appendChild(video);
-                    chatMessages.scrollTop = chatMessages.scrollHeight;
-                } else {
-                    addMessage("वीडियो कॉल आपके ब्राउज़र में समर्थित नहीं है।", 'bot');
-                }
-            } catch(err) {
-                addMessage("वीडियो कॉल चालू नहीं हो पाया।", 'bot');
-                console.error(err);
-            }
-        });
+// Add message
+function addMessage(content, sender) {
+    const messageDiv = document.createElement('div');
+    messageDiv.classList.add('message', sender + '-message');
+    const messageContent = document.createElement('div');
+    messageContent.classList.add('message-content');
+    messageContent.textContent = content;
+    const messageTime = document.createElement('div');
+    messageTime.classList.add('message-time');
+    messageTime.textContent = getCurrentTime();
+    messageDiv.appendChild(messageContent);
+    messageDiv.appendChild(messageTime);
+    chatMessages.appendChild(messageDiv);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+}
 
-                // Dark mode toggle
-        darkModeBtn.addEventListener('click', () => {
-            document.body.classList.toggle('dark-mode');
-            if (document.body.classList.contains('dark-mode')) {
-                darkModeBtn.innerHTML = '<i class="fas fa-sun"></i> लाइट मोड';
-            } else {
-                darkModeBtn.innerHTML = '<i class="fas fa-moon"></i> डार्क मोड';
-            }
-        });
+// Current time
+function getCurrentTime() {
+    const now = new Date();
+    return now.getHours() + ':' + (now.getMinutes()<10?'0':'') + now.getMinutes();
+}
 
-        // Fullscreen mode
-        fullscreenBtn.addEventListener('click', () => {
-            if (!document.fullscreenElement) {
-                document.documentElement.requestFullscreen().catch(err => {
-                    console.error(`Fullscreen error: ${err.message}`);
-                    addMessage("Fullscreen mode चालू नहीं हो पाया।", 'bot');
-                });
-            } else if (document.exitFullscreen) {
-                document.exitFullscreen().catch(err => {
-                    console.error(`Exit fullscreen error: ${err.message}`);
-                    addMessage("Fullscreen mode बंद नहीं हो पाया।", 'bot');
-                });
-            }
-        });
+// Send message
+async function sendMessage(message) {
+    if(!message) return;
+    addMessage(message,'user');
+    chatInput.value='';
+    typingIndicator.style.display='block';
+    setTimeout(()=>{
+        const replies=["मैंने आपका संदेश समझ लिया: "+message,"आपने कहा: "+message,"आपकी कमांड प्रोसेस की जा रही है","मैं इस पर काम कर रहा हूं"];
+        const randomReply = replies[Math.floor(Math.random()*replies.length)];
+        addMessage(randomReply,'bot');
+        speakText(randomReply);
+        typingIndicator.style.display='none';
+    },1000);
+}
 
-        // Send button click event
-        sendButton.addEventListener('click', () => {
-            const message = chatInput.value.trim();
-            sendMessage(message);
-        });
+// Speech synthesis
+function speakText(text){
+    if(!('speechSynthesis' in window)) return;
+    const utter = new SpeechSynthesisUtterance(text);
+    utter.lang='hi-IN';
+    window.speechSynthesis.speak(utter);
+}
 
-        // Enter key press event
-        chatInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                const message = chatInput.value.trim();
-                sendMessage(message);
-            }
-        });
+// Send on button click or enter
+sendButton.addEventListener('click',()=>sendMessage(chatInput.value));
+chatInput.addEventListener('keydown',(e)=>{if(e.key==='Enter') sendMessage(chatInput.value);});
 
-        // Settings button
-        settingsBtn.addEventListener('click', () => {
-            addMessage("सेटिंग्स मेनू खोला जा रहा है...", 'bot');
-            // In a real app, this would open a settings modal
-            setTimeout(() => {
-                addMessage("सेटिंग्स विकल्प: भाषा बदलें, थीम, सूचनाएं, गोपनीयता सेटिंग्स", 'bot');
-            }, 1000);
-        });
+// Voice input
+voiceButton.addEventListener('click',()=>{
+    if(!recognition){addMessage("वॉइस इनपुट आपके ब्राउज़र में समर्थित नहीं है।",'bot'); return;}
+    recognition.start();
+    recognition.onresult = (event)=>{
+        const speechText = event.results[0][0].transcript;
+        chatInput.value = speechText;
+    }
+});
 
-        // Initialize with some features
-        setTimeout(() => {
-            addMessage("मैं 100+ सुविधाओं वाला एक उन्नत AI सहायक हूं। आप वॉइस कमांड, वीडियो कॉल, स्क्रीन शेयरिंग और बहुत कुछ कर सकते हैं!", 'bot');
-        }, 2000);
+// Voice command
+voiceCommandBtn.addEventListener('click',()=>{
+    if(!recognition){addMessage("वॉइस कमांड आपके ब्राउज़र में समर्थित नहीं है।",'bot'); return;}
+    voiceCommandBtn.classList.add('listening');
+    recognition.start();
+    recognition.onresult=(event)=>{
+        const command=event.results[0][0].transcript;
+        voiceCommandBtn.classList.remove('listening');
+        processVoiceCommand(command);
+    };
+    recognition.onerror=(event)=>{
+        voiceCommandBtn.classList.remove('listening');
+        addMessage("वॉइस कमांड में त्रुटि हुई। कृपया पुनः प्रयास करें।",'bot');
+    };
+    recognition.onend=()=>{voiceCommandBtn.classList.remove('listening');}
+});
 
-        // Simulate some initial activity
-        setTimeout(() => {
-            addMessage("आप 'माइक्रोफोन' बटन दबाकर या नीचे दाएं कोने में वॉइस कमांड बटन का उपयोग करके वॉइस कमांड दे सकते हैं।", 'bot');
-        }, 4000);
-    </script>
+// Process voice command
+function processVoiceCommand(command){
+    commandText.textContent=`कमांड: ${command}`;
+    commandOutput.classList.add('show');
+    executeCommand.onclick=()=>{executeAppCommand(command); commandOutput.classList.remove('show');};
+    cancelCommand.onclick=()=>{commandOutput.classList.remove('show'); addMessage("कमांड रद्द की गई।",'bot');};
+}
+
+// Execute app command
+function executeAppCommand(command){
+    addMessage(`कमांड: ${command}`,'user');
+
+    if(command.match(/WhatsApp|व्हाट्सएप|whatsapp/)){
+        if(command.match(/भेजो|मैसेज|send/)){
+            const contactMatch=command.match(/([A-Za-z0-9 ]+) को/);
+            const messageMatch=command.match(/को (.+) भेजो/);
+            let contact="contact", message="Hello";
+            if(contactMatch && messageMatch){contact=contactMatch[1].trim(); message=messageMatch[1].trim();}
+            const whatsappUrl=`https://wa.me/?text=${encodeURIComponent(message)}`;
+            window.open(whatsappUrl,'_blank');
+            addMessage(`WhatsApp पर ${contact} को "${message}" भेजा जा रहा है...`,'bot');
+            speakText(`WhatsApp message sent to ${contact}`);
+        } else {window.open('https://web.whatsapp.com','_blank'); addMessage("WhatsApp खोला जा रहा है...",'bot');}
+    } else if(command.match(/YouTube|यूट्यूब|youtube/)){
+        const searchMatch=command.match(/चलाओ (.+)/) || command.match(/खोलो (.+)/) || command.match(/open (.+)/);
+        if(searchMatch){const query=searchMatch[1].trim(); window.open(`https://www.youtube.com/results?search_query=${encodeURIComponent(query)}`,'_blank'); addMessage(`YouTube पर "${query}" खोला जा रहा है...`,'bot');}
+        else {window.open('https://www.youtube.com','_blank'); addMessage("YouTube खोला जा रहा है...",'bot');}
+    } else if(command.match(/कॉल|call/)){
+        const contactMatch = command.match(/([A-Za-z0-9 ]+) को कॉल/) || command.match(/call ([A-Za-z0-9 ]+)/);
+        if(contactMatch){const contact=contactMatch[1].trim(); addMessage(`${contact} को कॉल किया जा रहा है...`,'bot'); speakText(`Calling ${contact}`);}
+        else {addMessage("कृपया सही फॉर्मेट में बोलें: '[नाम] को कॉल करो'",'bot');}
+    } else if(command.match(/Facebook|फेसबुक|facebook/)){window.open('https://www.facebook.com','_blank'); addMessage("Facebook खोला जा रहा है...",'bot');}
+    else if(command.match(/Instagram|इंस्टाग्राम|instagram/)){window.open('https://www.instagram.com','_blank'); addMessage("Instagram खोला जा रहा है...",'bot');}
+    else {addMessage("मैंने आपकी कमांड समझी: " + command + ". लेकिन मैं अभी इस प्रकार की कमांड को प्रोसेस नहीं कर सकता।",'bot');}
+}
+
+// Screen sharing
+screenShareBtn.addEventListener('click', async ()=>{
+    try{
+        addMessage("स्क्रीन शेयरिंग शुरू की जा रही है...",'bot');
+        if(navigator.mediaDevices.getDisplayMedia){
+            const stream = await navigator.mediaDevices.getDisplayMedia({video:true,audio:true});
+            const video = document.createElement('video');
+            video.srcObject = stream; video.autoplay=true; video.style.width='100%'; video.style.maxHeight='300px'; video.style.borderRadius='12px'; video.style.marginTop='10px';
+            chatMessages.appendChild(video); chatMessages.scrollTop=chatMessages.scrollHeight;
+            addMessage("स्क्रीन शेयरिंग शुरू हुई...",'bot');
+            stream.getTracks().forEach(track=>{track.onended=()=>{video.remove(); addMessage("स्क्रीन शेयरिंग बंद हुई",'bot');}});
+        } else {addMessage("स्क्रीन शेयरिंग आपके ब्राउज़र में समर्थित नहीं है।",'bot');}
+    } catch(err){addMessage("स्क्रीन शेयरिंग में त्रुटि: "+err.message,'bot'); console.error(err);}
+});
+
+// Video call
+videoCallBtn.addEventListener('click', async ()=>{
+    addMessage("📹 वीडियो कॉल चालू हो रही है...",'bot');
+    try{
+        if(navigator.mediaDevices.getUserMedia){
+            const stream = await navigator.mediaDevices.getUserMedia({video:true,audio:true});
+            const video = document.createElement('video'); video.srcObject=stream; video.autoplay=true; video.style.width='100%'; video.style.borderRadius='12px';
+            chatMessages.appendChild(video); chatMessages.scrollTop=chatMessages.scrollHeight;
+        } else {addMessage("वीडियो कॉल आपके ब्राउज़र में समर्थित नहीं है।",'bot');}
+    } catch(err){addMessage("वीडियो कॉल चालू नहीं हो पाया।",'bot'); console.error(err);}
+});
+
+// Dark mode toggle
+darkModeBtn.addEventListener('click', ()=>{
+    document.body.classList.toggle('dark-mode');
+    darkModeBtn.innerHTML=document.body.classList.contains('dark-mode')?'<i class="fas fa-sun"></i> लाइट मोड':'<i class="fas fa-moon"></i> डार्क मोड';
+});
+
+// Fullscreen toggle
+fullscreenBtn.addEventListener('click',()=>{
+    if(!document.fullscreenElement){document.documentElement.requestFullscreen().catch(err=>{addMessage("Fullscreen mode चालू नहीं हो पाया।",'bot'); console.error(err);})}
+    else if(document.exitFullscreen){document.exitFullscreen().catch(err=>{addMessage("Fullscreen mode बंद नहीं हो पाया।",'bot'); console.error(err);})}
+});
+</script>
 </body>
 </html>
