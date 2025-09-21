@@ -21,9 +21,17 @@ export default async function handler(req, res) {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        // 👇 Yahan sahi model slug daalna zaruri hai
-        model: "deepseek/deepseek-chat", 
-        messages: [{ role: "user", content: message }],
+        model: "deepseek/deepseek-chat", // ✅ सही मॉडल
+        messages: [
+          {
+            role: "system",
+            content:
+              "तुम एक friendly और helpful chatbot हो जिसका नाम Alfa AI है। केवल ज़रूरी और छोटे जवाब दो, extra explanation मत दो।",
+          },
+          { role: "user", content: message },
+        ],
+        max_tokens: 150, // ✅ जवाब छोटा रखने के लिए
+        temperature: 0.7,
       }),
     });
 
@@ -31,7 +39,9 @@ export default async function handler(req, res) {
 
     if (!r.ok) {
       console.error("OpenRouter Error:", data);
-      return res.status(r.status).json({ error: data.error?.message || "OpenRouter API error" });
+      return res
+        .status(r.status)
+        .json({ error: data.error?.message || "OpenRouter API error" });
     }
 
     const reply = data.choices?.[0]?.message?.content || "No reply from AI";
