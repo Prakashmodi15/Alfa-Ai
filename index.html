@@ -671,7 +671,6 @@
     <footer>
         <p>© 2023 अल्फा AI - सभी अधिकार सुरक्षित | 100+ उन्नत सुविधाओं के साथ</p>
     </footer>
-
 <script>
 const chatMessages = document.querySelector('.chat-messages');
 const chatInput = document.querySelector('.chat-input');
@@ -679,7 +678,6 @@ const sendButton = document.getElementById('send-btn');
 const voiceButton = document.getElementById('voice-btn');
 const videoCallBtn = document.getElementById('video-call-btn');
 const darkModeBtn = document.getElementById('dark-mode-btn');
-const fullscreenBtn = document.getElementById('fullscreen-btn');
 const voiceCommandBtn = document.getElementById('voiceCommandBtn');
 const screenShareBtn = document.getElementById('screenShareBtn');
 const commandOutput = document.getElementById('commandOutput');
@@ -688,7 +686,7 @@ const executeCommand = document.getElementById('executeCommand');
 const cancelCommand = document.getElementById('cancelCommand');
 const typingIndicator = document.querySelector('.typing-indicator');
 
-// Separate SpeechRecognition for input & command
+// Speech Recognition
 let voiceInputRecognition = null;
 let voiceCommandRecognition = null;
 if ('webkitSpeechRecognition' in window) {
@@ -772,7 +770,7 @@ darkModeBtn.addEventListener('click', ()=>{
     document.body.classList.toggle('dark-mode');
 });
 
-// Stop any ongoing recognition before starting new
+// Stop recognition
 function stopAllRecognition(){
     voiceInputRecognition?.stop?.();
     voiceCommandRecognition?.stop?.();
@@ -787,8 +785,8 @@ voiceButton.addEventListener('click', ()=>{
         const speechText = event.results[0][0].transcript;
         chatInput.value = speechText;
     }
-    voiceInputRecognition.onerror = ()=>{
-        addMessage("वॉइस इनपुट त्रुटि।",'bot');
+    voiceInputRecognition.onerror = (err)=>{
+        addMessage("वॉइस इनपुट त्रुटि: "+(err.error||err.message),'bot');
     }
 });
 
@@ -805,14 +803,15 @@ voiceCommandBtn.addEventListener('click', ()=>{
         processVoiceCommand(command);
     };
 
-    voiceCommandRecognition.onerror = ()=>{
+    voiceCommandRecognition.onerror = (err)=>{
         voiceCommandBtn.classList.remove('listening');
-        addMessage("वॉइस कमांड त्रुटि।",'bot');
+        addMessage("वॉइस कमांड त्रुटि: "+(err.error||err.message),'bot');
     };
 
     voiceCommandRecognition.onend = ()=>{voiceCommandBtn.classList.remove('listening');}
 });
-    function processVoiceCommand(command){
+
+function processVoiceCommand(command){
     commandText.textContent = `कमांड: ${command}`;
     commandOutput.classList.add('show');
     executeCommand.onclick = ()=>{executeAppCommand(command); commandOutput.classList.remove('show');};
@@ -850,13 +849,36 @@ function executeAppCommand(command){
     }
 }
 
+// Video Call (Local Preview)
+videoCallBtn.addEventListener('click', async ()=>{
+    try{
+        addMessage("वीडियो कॉल शुरू की जा रही है...",'bot');
+        const stream = await navigator.mediaDevices.getUserMedia({ video:true, audio:true });
+        const video = document.createElement('video');
+        video.srcObject = stream;
+        video.autoplay = true;
+        video.style.width='100%';
+        video.style.maxHeight='300px';
+        video.style.borderRadius='12px';
+        video.style.marginTop='10px';
+        chatMessages.appendChild(video);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+        addMessage("वीडियो कॉल शुरू हुई।",'bot');
+        stream.getTracks().forEach(track=>{
+            track.onended=()=>{video.remove(); addMessage("वीडियो कॉल बंद हुई।",'bot');};
+        });
+    } catch(err){
+        addMessage("वीडियो कॉल त्रुटि: "+err.message,'bot');
+        console.error(err);
+    }
+});
+
 // Screen Sharing
 screenShareBtn.addEventListener('click', async ()=>{
     try{
         addMessage("स्क्रीन शेयरिंग शुरू की जा रही है...",'bot');
         if(navigator.mediaDevices.getDisplayMedia){
             const stream = await navigator.mediaDevices.getDisplayMedia({video:true,audio:true});
-            // Remove previous shared videos
             document.querySelectorAll('.chat-messages video').forEach(v => v.remove());
             const video = document.createElement('video');
             video.srcObject = stream;
