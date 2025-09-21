@@ -849,14 +849,17 @@ screenShareBtn.addEventListener('click', async ()=>{
         addMessage("स्क्रीन शेयरिंग शुरू की जा रही है...",'bot');
         if(navigator.mediaDevices.getDisplayMedia){
             const stream = await navigator.mediaDevices.getDisplayMedia({video:true,audio:true});
-            const video = document.createElement('video');
-            video.srcObject = stream;
-            video.autoplay = true;
-            video.style.width='100%';
-            video.style.maxHeight='300px';
-            video.style.borderRadius='12px';
-            video.style.marginTop='10px';
-            chatMessages.appendChild(video); 
+            // Remove previous shared videos
+document.querySelectorAll('.chat-messages video').forEach(v => v.remove());
+
+const video = document.createElement('video');
+video.srcObject = stream;
+video.autoplay = true;
+video.style.width='100%';
+video.style.maxHeight='300px';
+video.style.borderRadius='12px';
+video.style.marginTop='10px';
+chatMessages.appendChild(video);
             chatMessages.scrollTop = chatMessages.scrollHeight;
             addMessage("स्क्रीन शेयरिंग शुरू हुई...",'bot');
             stream.getTracks().forEach(track=>{
