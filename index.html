@@ -17,31 +17,30 @@
 </head>
 <body>
 
-  <div id="chat-container">
+<div id="chat-container">
 
-    <!-- Logo -->
-    <div id="logo-box">
-      <img src="logo-192.png" alt="Alfa AI" id="logo">
-    </div>
+  <!-- Logo video -->
+  <video id="logo" autoplay muted loop>
+    <source src="logo.mp4" type="video/mp4">
+  </video>
 
-    <!-- Heading -->
-    <h1>I'm <span id="name">Alfa AI</span>, Your <span id="va">Virtual Assistant</span></h1>
+  <h1>I'm <span id="name">Alfa AI</span>, Your <span id="va">Virtual Assistant</span></h1>
 
-    <!-- Voice listening gif -->
-    <img src="voice.gif" alt="voice" id="voice">
+  <!-- Voice listening gif -->
+  <img src="voice.gif" alt="voice" id="voice" style="display:none;">
 
-    <!-- Chat messages container -->
-    <div id="messages"></div>
+  <!-- Chat messages container -->
+  <div id="messages"></div>
 
-    <!-- Input container -->
-    <div id="input-container">
-      <input type="text" id="prompt" placeholder="Type your message...">
-      <button id="send-btn">Send</button>
-      <button id="btn"><img src="mic.svg" alt="mic"></button>
-    </div>
-
+  <!-- Input container -->
+  <div id="input-container">
+    <input type="text" id="prompt" placeholder="Type your message...">
+    <button id="send-btn">Send</button>
+    <button id="btn"><img src="mic.svg" alt="mic"></button>
   </div>
 
-  <script src="script.js"></script>
+</div>
+
+<script src="script.js"></script>
 </body>
 </html>
