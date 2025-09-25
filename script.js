@@ -48,6 +48,7 @@ recognition.onresult = (e) => {
     processCommand(transcript.toLowerCase());
 };
 
+// ====== Button Events ======
 btn.addEventListener("click",()=>{synth.cancel(); recognition.start();});
 sendBtn.addEventListener("click",()=>{
     const message = promptInput.value.trim();
@@ -123,7 +124,7 @@ function getPrice(itemName){
         const price = item["Sale Price-B"] || item["Sale Price"] || "N/A";
         return `Item: ${item.Name}, Price: ₹${price}`;
     }
-    return "माफ़ कीजिये, यह आइटम हमारे database में नहीं है।";
+    return null; // कोई match नहीं
 }
 
 // ====== Process Commands ======
@@ -136,13 +137,13 @@ async function processCommand(message){
 
     // ---- Item Price Check ----
     const priceReply = getPrice(message);
-    if(priceReply.includes("Price")){
+    if(priceReply){
         addMessage("Alfa", priceReply);
         speak(priceReply);
         return;
     }
 
-    // ---- Local Commands ----
+    // ---- Local simple commands ----
     if(message.includes("hello") || message.includes("हेलो")){ speak("नमस्ते सर, मैं आपकी क्या मदद कर सकती हूँ?"); return; }
     if(message.includes("who are you") || message.includes("कौन हो तुम")){ speak("मैं Alfa AI हूँ, जिसे Prakash Modi ने बनाया है।"); return; }
     if(message.includes("open youtube") || message.includes("यूट्यूब खोलो")){ speak("यूट्यूब खोल रही हूँ"); window.open("https://youtube.com/","_blank"); return; }
@@ -153,7 +154,11 @@ async function processCommand(message){
     // ---- API Fallback ----
     const typingDiv = addMessage("Alfa", `<span class="dot-typing"><span></span><span></span><span></span></span>`, true);
     try{
-        const res = await fetch("/api/alfa",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({prompt:message})});
+        const res = await fetch("/api/alfa",{
+            method:"POST",
+            headers:{"Content-Type":"application/json"},
+            body:JSON.stringify({prompt:message})
+        });
         const data = await res.json();
         messagesDiv.removeChild(typingDiv);
         const reply = data.reply || "माफ़ करें, जवाब नहीं मिला।";
