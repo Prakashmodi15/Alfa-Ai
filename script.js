@@ -1,4 +1,5 @@
-const btn = document.querySelector("#btn");
+const btn = document.querySelector("#btn");   // 🎤 Voice Button
+const sendBtn = document.querySelector("#sendBtn"); // 📩 Send Button
 const content = document.querySelector("#content");
 const voice = document.querySelector("#voice");
 const messagesDiv = document.querySelector("#messages");
@@ -17,7 +18,6 @@ if (synth.onvoiceschanged !== undefined) synth.onvoiceschanged = loadVoices;
 function speak(text) {
     if (synth.speaking) synth.cancel();
     setTimeout(() => {
-        // Emoji और special characters remove करना
         text = text.replace(/[\u{1F600}-\u{1F6FF}]/gu, '').replace(/[^\w\s.,?!]/g,'');
         const utter = new SpeechSynthesisUtterance(text);
         if(hindiVoice) utter.voice = hindiVoice;
@@ -33,7 +33,7 @@ const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecogni
 const recognition = new SpeechRecognition();
 recognition.lang = 'hi-IN';
 recognition.interimResults = false;
-recognition.continuous = true; // Continuous conversation
+recognition.continuous = true;
 
 recognition.onstart = () => { voice.style.display = "block"; btn.style.display = "none"; };
 recognition.onend = () => { voice.style.display = "none"; btn.style.display = "flex"; };
@@ -46,7 +46,17 @@ recognition.onresult = (e) => {
 
 btn.addEventListener("click", () => { synth.cancel(); recognition.start(); });
 
-// Enter दबाने पर भेजने के लिए
+// 🎯 Send button click event
+sendBtn.addEventListener("click", () => {
+    if(promptInput.value.trim() !== "") {
+        const message = promptInput.value.trim();
+        promptInput.value = "";
+        addMessage("User", message);
+        processCommand(message.toLowerCase());
+    }
+});
+
+// 🎯 Enter दबाने पर भी भेजे
 promptInput.addEventListener("keypress", (e) => {
     if(e.key === "Enter" && promptInput.value.trim() !== "") {
         const message = promptInput.value.trim();
@@ -67,7 +77,6 @@ function addMessage(sender, text, typing=false) {
 }
 
 async function processCommand(message) {
-    // Local commands
     if(message.includes("hello") || message.includes("हेलो")) { speak("नमस्ते सर, मैं आपकी क्या मदद कर सकती हूँ?"); return; }
     if(message.includes("who are you") || message.includes("कौन हो तुम")) { speak("मैं Alfa AI हूँ, जिसे Prakash Modi ने बनाया है।"); return; }
     if(message.includes("open youtube") || message.includes("यूट्यूब खोलो")) { speak("यूट्यूब खोल रही हूँ"); window.open("https://youtube.com/","_blank"); return; }
@@ -75,7 +84,6 @@ async function processCommand(message) {
     if(message.includes("time") || message.includes("समय")) { const time = new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}); speak(`अभी ${time} हो रहे हैं।`); return; }
     if(message.includes("date") || message.includes("तारीख")) { const date = new Date().toLocaleDateString("hi-IN", {day:"numeric",month:"long"}); speak(`आज ${date} है।`); return; }
 
-    // API call
     const typingDiv = addMessage("Alfa", `<span class="dot-typing"><span></span><span></span><span></span></span>`, true);
     try {
         const res = await fetch("/api/alfa", {
