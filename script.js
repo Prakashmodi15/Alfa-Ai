@@ -2,6 +2,7 @@ const btn = document.querySelector("#btn");
 const content = document.querySelector("#content");
 const voice = document.querySelector("#voice");
 const messagesDiv = document.querySelector("#messages");
+const promptInput = document.querySelector("#prompt");
 
 const synth = window.speechSynthesis;
 let hindiVoice = null;
@@ -13,14 +14,12 @@ function loadVoices() {
 loadVoices();
 if (synth.onvoiceschanged !== undefined) synth.onvoiceschanged = loadVoices;
 
-// --- Speak function with emoji/characters removed ---
 function speak(text) {
     if (synth.speaking) synth.cancel();
     setTimeout(() => {
-        // Remove emoji and special characters for voice
-        const cleanText = text.replace(/([\u2700-\u27BF]|[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|\uD83E[\uDD00-\uDDFF]|[#*]+)/g, '');
-        if(cleanText.trim() === '') return; // nothing to speak
-        const utter = new SpeechSynthesisUtterance(cleanText);
+        // Emoji और special characters remove करना
+        text = text.replace(/[\u{1F600}-\u{1F6FF}]/gu, '').replace(/[^\w\s.,?!]/g,'');
+        const utter = new SpeechSynthesisUtterance(text);
         if(hindiVoice) utter.voice = hindiVoice;
         utter.lang = 'hi-IN';
         utter.pitch = 1;
@@ -34,18 +33,28 @@ const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecogni
 const recognition = new SpeechRecognition();
 recognition.lang = 'hi-IN';
 recognition.interimResults = false;
-recognition.continuous = false;
+recognition.continuous = true; // Continuous conversation
 
 recognition.onstart = () => { voice.style.display = "block"; btn.style.display = "none"; };
 recognition.onend = () => { voice.style.display = "none"; btn.style.display = "flex"; };
 recognition.onerror = (e) => { content.innerText="माफ़ कीजिये, मैं सुन नहीं पा रही हूँ।"; };
 recognition.onresult = (e) => {
-    const transcript = e.results[0][0].transcript.trim();
+    const transcript = e.results[e.results.length - 1][0].transcript.trim();
     addMessage("User", transcript);
     processCommand(transcript.toLowerCase());
 };
 
 btn.addEventListener("click", () => { synth.cancel(); recognition.start(); });
+
+// Enter दबाने पर भेजने के लिए
+promptInput.addEventListener("keypress", (e) => {
+    if(e.key === "Enter" && promptInput.value.trim() !== "") {
+        const message = promptInput.value.trim();
+        promptInput.value = "";
+        addMessage("User", message);
+        processCommand(message.toLowerCase());
+    }
+});
 
 function addMessage(sender, text, typing=false) {
     const div = document.createElement("div");
@@ -58,8 +67,8 @@ function addMessage(sender, text, typing=false) {
 }
 
 async function processCommand(message) {
-    // Built-in commands
-    if(message.includes("hello") || message.includes("hey") || message.includes("हेलो")) { speak("नमस्ते सर, मैं आपकी क्या मदद कर सकती हूँ?"); return; }
+    // Local commands
+    if(message.includes("hello") || message.includes("हेलो")) { speak("नमस्ते सर, मैं आपकी क्या मदद कर सकती हूँ?"); return; }
     if(message.includes("who are you") || message.includes("कौन हो तुम")) { speak("मैं Alfa AI हूँ, जिसे Prakash Modi ने बनाया है।"); return; }
     if(message.includes("open youtube") || message.includes("यूट्यूब खोलो")) { speak("यूट्यूब खोल रही हूँ"); window.open("https://youtube.com/","_blank"); return; }
     if(message.includes("open google") || message.includes("गूगल खोलो")) { speak("गूगल खोल रही हूँ"); window.open("https://google.com/","_blank"); return; }
