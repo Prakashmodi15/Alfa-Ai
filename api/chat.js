@@ -1,4 +1,4 @@
-// api/chat.js
+// /api/chat.js
 export default async function handler(req, res) {
     if (req.method === 'POST') {
         const { message } = req.body;
@@ -7,21 +7,31 @@ export default async function handler(req, res) {
             return res.status(400).json({ response: "⚠️ Message missing" });
         }
 
-        // Yahan aap real AI API call ya local logic laga sakte ho
-        let aiResponse;
+        try {
+            // OpenRouter DeepSeek V3 API call
+            const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${process.env.OPENROUTER_API_KEY}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    model: 'deepseek/deepseek-v3-0324:free',
+                    messages: [{ role: 'user', content: message }]
+                })
+            });
 
-        // Simple local AI fallback
-        const lowerMessage = message.toLowerCase();
-        if (lowerMessage.includes('hello') || lowerMessage.includes('hi') || lowerMessage.includes('namaste')) {
-            aiResponse = "Namaste! Main Alfa AI hoon, Prakash Modi ji ka personal assistant.";
-        } else if (lowerMessage.includes('time') || lowerMessage.includes('samay')) {
-            aiResponse = `Abhi samay hai: ${new Date().toLocaleTimeString('hi-IN')}`;
-        } else {
-            aiResponse = "Dhanyavad! Main aapki query ko samajhne ki koshish kar raha hoon.";
+            const data = await response.json();
+            const aiResponse = data?.choices?.[0]?.message?.content || "⚠️ AI se response nahi aaya";
+
+            return res.status(200).json({ response: aiResponse });
+
+        } catch (error) {
+            console.error('Error:', error);
+            return res.status(500).json({ response: "⚠️ Error: Server se connect nahi ho pa raha" });
         }
 
-        return res.status(200).json({ response: aiResponse });
     } else {
-        res.status(405).json({ response: "Method not allowed" });
+        return res.status(405).json({ response: "Method not allowed" });
     }
 }
