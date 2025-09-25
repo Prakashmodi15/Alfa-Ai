@@ -9,12 +9,23 @@ body {
   width: 100%;
   min-height: 100vh;
   background-color: var(--bg-color, #000);
+  color: var(--text-color, #fff);
   display: flex;
   flex-direction: column;
   align-items: center;
   padding: 10px;
   font-family: "Segoe UI", sans-serif;
   overflow-x: hidden;
+  transition: all 0.3s ease;
+}
+
+/* ====== Light Mode Variables ====== */
+body.light-mode {
+  --bg-color: #f5f5f5;
+  --text-color: #000;
+  --chat-bg: #fff;
+  --input-bg: #eee;
+  --btn-bg: linear-gradient(to right, rgb(21,145,207), rgb(201,41,116));
 }
 
 /* ====== Logo ====== */
@@ -28,7 +39,7 @@ body {
 
 /* ====== Heading ====== */
 h1 {
-  color: #fff;
+  color: var(--text-color);
   font-size: 1.8rem;
   text-align: center;
   line-height: 1.4;
@@ -48,11 +59,12 @@ h1 {
   width: 100%;
   max-width: 600px;
   height: 55vh;
-  background: #111;
+  background: var(--chat-bg, #111);
   border-radius: 12px;
   padding: 15px;
   overflow-y: auto;
   margin-bottom: 15px;
+  color: var(--text-color);
 }
 
 /* ====== Chat Input ====== */
@@ -64,7 +76,7 @@ h1 {
   gap: 10px;
   padding: 8px;
   border-radius: 12px;
-  background: #1e1e1e;
+  background: var(--input-bg, #1e1e1e);
   margin-bottom: 10px;
 }
 
@@ -83,7 +95,7 @@ h1 {
   padding: 12px 16px;
   border: none;
   border-radius: 50px;
-  background: linear-gradient(to right, rgb(21,145,207), rgb(201,41,116));
+  background: var(--btn-bg);
   color: #fff;
   cursor: pointer;
   font-size: 14px;
