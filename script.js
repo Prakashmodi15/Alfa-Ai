@@ -1,11 +1,9 @@
-// ====== Elements ======
 const btn = document.querySelector("#btn");
 const sendBtn = document.querySelector("#send-btn");
 const messagesDiv = document.querySelector("#messages");
 const promptInput = document.querySelector("#prompt");
 const voice = document.querySelector("#voice");
 
-// ====== Speech Setup ======
 const synth = window.speechSynthesis;
 let hindiVoice = null;
 
@@ -16,23 +14,20 @@ function loadVoices() {
 loadVoices();
 if (synth.onvoiceschanged !== undefined) synth.onvoiceschanged = loadVoices;
 
-function speak(text) {
-  if (synth.speaking) synth.cancel();
-  setTimeout(() => {
+function speak(text){
+  if(synth.speaking) synth.cancel();
+  setTimeout(()=>{
     text = text.replace(/[\u{1F600}-\u{1F6FF}]/gu,'');
     const utter = new SpeechSynthesisUtterance(text);
     if(/[^\x00-\x7F]/.test(text)){
-      if(hindiVoice) utter.voice = hindiVoice;
+      if(hindiVoice) utter.voice=hindiVoice;
       utter.lang='hi-IN';
-    } else {
-      utter.lang='en-US';
-    }
+    } else { utter.lang='en-US'; }
     utter.pitch=1; utter.rate=1; utter.volume=1;
     synth.speak(utter);
   },200);
 }
 
-// ====== Recognition ======
 const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 const recognition = new SpeechRecognition();
 recognition.lang='hi-IN';
@@ -48,7 +43,6 @@ recognition.onresult = (e)=>{
   processCommand(transcript.toLowerCase());
 };
 
-// ====== Button Events ======
 btn.addEventListener("click",()=>{synth.cancel(); recognition.start();});
 sendBtn.addEventListener("click",()=>{
   const message = promptInput.value.trim();
@@ -59,7 +53,6 @@ sendBtn.addEventListener("click",()=>{
 });
 promptInput.addEventListener("keypress",(e)=>{if(e.key==="Enter") sendBtn.click();});
 
-// ====== Chat Bubble ======
 function addMessage(sender,text,typing=false){
   const div=document.createElement("div");
   div.className="bubble "+sender.toLowerCase();
@@ -70,7 +63,6 @@ function addMessage(sender,text,typing=false){
   return div;
 }
 
-// ====== Process Command ======
 async function processCommand(message){
   const typingDiv = addMessage("Alfa",`<span class="dot-typing"><span></span><span></span><span></span></span>`,true);
   try{
