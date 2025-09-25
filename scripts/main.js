@@ -1,24 +1,25 @@
 // Main Application Module
 class AlphaAI {
     constructor() {
-        this.modules = {};
+        this.modules = {};      // Chat, Voice, Command modules
+        this.features = {};     // Registered features
         this.isInitialized = false;
     }
 
     // Initialize all modules
     async initialize() {
         if (this.isInitialized) return;
-        
+
         try {
             // Load configuration
-            await this.loadConfig();
-            
+            this.loadConfig();
+
             // Initialize modules
             this.initializeChat();
             this.initializeVoice();
             this.initializeCommands();
             this.initializeUI();
-            
+
             this.isInitialized = true;
             console.log('अल्फा AI initialized successfully');
         } catch (error) {
@@ -27,27 +28,32 @@ class AlphaAI {
     }
 
     // Load configuration
-    async loadConfig() {
-        // Configuration is loaded from config.js
+    loadConfig() {
         this.config = window.APP_CONFIG || {};
         this.features = window.FEATURE_REGISTRY || {};
     }
 
     // Initialize chat module
     initializeChat() {
-        this.modules.chat = new ChatModule(this);
+        if (typeof ChatModule !== "undefined") {
+            this.modules.chat = new ChatModule(this);
+        } else {
+            console.warn('ChatModule not found');
+        }
     }
 
     // Initialize voice module
     initializeVoice() {
-        if (this.config.features.voiceCommands) {
+        if (this.config.features?.voiceCommands && typeof VoiceModule !== "undefined") {
             this.modules.voice = new VoiceModule(this);
         }
     }
 
     // Initialize commands module
     initializeCommands() {
-        this.modules.commands = new CommandModule(this);
+        if (typeof CommandModule !== "undefined") {
+            this.modules.commands = new CommandModule(this);
+        }
     }
 
     // Initialize UI events
@@ -58,31 +64,62 @@ class AlphaAI {
     // Setup event listeners
     setupEventListeners() {
         // Dark mode toggle
-        document.getElementById('dark-mode-btn').addEventListener('click', () => {
-            document.body.classList.toggle('dark-mode');
-        });
+        const darkModeBtn = document.getElementById('dark-mode-btn');
+        if (darkModeBtn) {
+            darkModeBtn.addEventListener('click', () => {
+                document.body.classList.toggle('dark-mode');
+            });
+        }
 
         // Video call button
-        document.getElementById('video-call-btn').addEventListener('click', () => {
-            this.modules.chat.startVideoCall();
-        });
+        const videoCallBtn = document.getElementById('video-call-btn');
+        if (videoCallBtn && this.modules.chat?.startVideoCall) {
+            videoCallBtn.addEventListener('click', () => {
+                this.modules.chat.startVideoCall();
+            });
+        }
 
         // Fullscreen button
-        document.getElementById('fullscreen-btn').addEventListener('click', () => {
-            this.toggleFullscreen();
-        });
+        const fullscreenBtn = document.getElementById('fullscreen-btn');
+        if (fullscreenBtn) {
+            fullscreenBtn.addEventListener('click', () => this.toggleFullscreen());
+        }
+
+        // Send chat message
+        const sendBtn = document.getElementById('send-btn');
+        const chatInput = document.querySelector('.chat-input');
+        if (sendBtn && chatInput && this.modules.chat?.sendMessage) {
+            sendBtn.addEventListener('click', () => {
+                const msg = chatInput.value.trim();
+                if (msg) this.modules.chat.sendMessage(msg);
+                chatInput.value = '';
+            });
+
+            // Enter key sends message
+            chatInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    const msg = chatInput.value.trim();
+                    if (msg) this.modules.chat.sendMessage(msg);
+                    chatInput.value = '';
+                }
+            });
+        }
     }
 
     // Toggle fullscreen
     toggleFullscreen() {
         if (!document.fullscreenElement) {
-            document.documentElement.requestFullscreen();
+            document.documentElement.requestFullscreen().catch((err) => {
+                console.warn(`Fullscreen request failed: ${err.message}`);
+            });
         } else {
-            document.exitFullscreen();
+            document.exitFullscreen().catch((err) => {
+                console.warn(`Exit fullscreen failed: ${err.message}`);
+            });
         }
     }
 
-    // Register new feature
+    // Register new feature dynamically
     registerFeature(name, featureModule) {
         this.features[name] = featureModule;
         console.log(`Feature registered: ${name}`);
