@@ -70,79 +70,8 @@ function addMessage(sender, text, typing=false){
     return div;
 }
 
-// ====== CSV / Items Setup ======
-const fileInput = document.createElement("input");
-fileInput.type = "file";
-fileInput.accept = ".csv";
-document.body.appendChild(fileInput);
-
-let itemsData = [];
-let fuse;
-
-// Trigger CSV select
-function selectCSVFile(){ fileInput.click(); }
-
-// Handle CSV upload
-fileInput.addEventListener("change",(e)=>{
-    const file = e.target.files[0];
-    if(file) readCSVFile(file);
-});
-
-function readCSVFile(file){
-    const reader = new FileReader();
-    reader.onload = (e)=>{
-        const text = e.target.result;
-        itemsData = csvToJSON(text);
-        fuse = new Fuse(itemsData, { keys:['Name','Alias','Print Name'], threshold:0.3 });
-        console.log("Items loaded:", itemsData.length);
-        addMessage("Alfa",`CSV loaded with ${itemsData.length} items.`);
-        speak("CSV file load हो गयी है। अब आप किसी item का नाम पूछ सकते हैं।");
-    };
-    reader.readAsText(file);
-}
-
-function csvToJSON(csvText){
-    const lines = csvText.trim().split("\n");
-    const headers = lines[0].split(",");
-    const data=[];
-    for(let i=1;i<lines.length;i++){
-        const obj={};
-        const currentLine = lines[i].split(",");
-        headers.forEach((header,j)=>{
-            obj[header.trim()] = currentLine[j]?.trim()||"";
-        });
-        data.push(obj);
-    }
-    return data;
-}
-
-function getPrice(itemName){
-    if(!fuse) return "CSV file load नहीं हुई है। कृपया पहले CSV जोड़ें।";
-    const result = fuse.search(itemName);
-    if(result.length>0){
-        const item = result[0].item;
-        const price = item["Sale Price-B"] || item["Sale Price"] || "N/A";
-        return `Item: ${item.Name}, Price: ₹${price}`;
-    }
-    return null; // कोई match नहीं
-}
-
 // ====== Process Commands ======
 async function processCommand(message){
-    // ---- CSV Load ----
-    if(message.includes("load csv") || message.includes("सीएसवी जोड़ो")){
-        selectCSVFile();
-        return;
-    }
-
-    // ---- Item Price Check ----
-    const priceReply = getPrice(message);
-    if(priceReply){
-        addMessage("Alfa", priceReply);
-        speak(priceReply);
-        return;
-    }
-
     // ---- Local simple commands ----
     if(message.includes("hello") || message.includes("हेलो")){ speak("नमस्ते सर, मैं आपकी क्या मदद कर सकती हूँ?"); return; }
     if(message.includes("who are you") || message.includes("कौन हो तुम")){ speak("मैं Alfa AI हूँ, जिसे Prakash Modi ने बनाया है।"); return; }
@@ -151,21 +80,19 @@ async function processCommand(message){
     if(message.includes("time") || message.includes("समय")){ const time=new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}); speak(`अभी ${time} हो रहे हैं।`); return; }
     if(message.includes("date") || message.includes("तारीख")){ const date=new Date().toLocaleDateString("hi-IN",{day:"numeric",month:"long"}); speak(`आज ${date} है।`); return; }
 
-    // ---- API Fallback ----
-    const typingDiv = addMessage("Alfa", `<span class="dot-typing"><span></span><span></span><span></span></span>`, true);
+    // ---- Check Server-side CSV for price ----
     try{
         const res = await fetch("/api/alfa",{
             method:"POST",
             headers:{"Content-Type":"application/json"},
-            body:JSON.stringify({prompt:message})
+            body:JSON.stringify({prompt: message})
         });
         const data = await res.json();
-        messagesDiv.removeChild(typingDiv);
         const reply = data.reply || "माफ़ करें, जवाब नहीं मिला।";
         addMessage("Alfa", reply);
         speak(reply);
     } catch(err){
-        messagesDiv.removeChild(typingDiv);
         speak("नेटवर्क एरर, कृपया बाद में प्रयास करें।");
+        addMessage("Alfa", "नेटवर्क एरर, कृपया बाद में प्रयास करें।");
     }
 }
