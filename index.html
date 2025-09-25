@@ -1,50 +1,24 @@
 <!DOCTYPE html>
 <html lang="hi">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Alfa AI - Virtual Assistant</title>
-  <link rel="shortcut icon" href="logo.jpg" type="image/x-icon">
-  <link rel="stylesheet" href="style.css">
-
-  <!-- PWA meta tags -->
-  <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#00aaff">
-  <meta name="description" content="Alfa AI - Your Virtual Assistant, voice-enabled and AI powered.">
-  <meta name="mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta charset="UTF-8">
+<title>Alfa AI Chat</title>
+<style>
+  body { font-family: sans-serif; padding: 20px; background:#f4f4f4;}
+  #messages { border:1px solid #ccc; padding:10px; height:300px; overflow-y:auto; margin-bottom:10px;}
+  .bubble { padding:8px 12px; margin:5px 0; border-radius:10px; max-width:70%;}
+  .user { background:#0084ff; color:#fff; align-self:flex-end;}
+  .alfa { background:#e5e5ea; color:#000; align-self:flex-start;}
+  #voice { color:red; font-weight:bold;}
+</style>
 </head>
 <body>
-
-<!-- Optional: Dark/Light toggle -->
-<!-- <button id="mode-toggle" style="position:fixed; top:10px; right:10px; z-index:1000; padding:8px 12px; border-radius:8px; background:#00aaff; color:#fff; border:none; cursor:pointer;">Toggle Mode</button> -->
-
-<div id="chat-container">
-
-  <!-- Logo video -->
-  <video id="logo" autoplay muted loop>
-    <source src="logo.mp4" type="video/mp4">
-  </video>
-
-  <h1>I'm <span id="name">Alfa AI</span>, Your <span id="va">Virtual Assistant</span></h1>
-
-  <!-- Voice listening gif -->
-  <img src="voice.gif" alt="voice" id="voice" style="display:none;">
-
-  <!-- Chat messages container -->
   <div id="messages"></div>
+  <input id="prompt" type="text" placeholder="Type message..." style="width:70%;">
+  <button id="send-btn">Send</button>
+  <button id="btn">🎤</button>
+  <div id="voice" style="display:none;">Listening...</div>
 
-  <!-- Input container -->
-  <div id="input-container">
-    <input type="text" id="prompt" placeholder="Type your message...">
-    <button id="send-btn">Send</button>
-    <button id="btn"><img src="mic.svg" alt="mic"></button>
-  </div>
-
-</div>
-
-<!-- Script -->
-<script src="script.js"></script>
+  <script src="script.js"></script>
 </body>
 </html>
