@@ -92,6 +92,11 @@ h1 {
   color: #fff;
   cursor: pointer;
   font-size: 14px;
+  transition: 0.3s;
+}
+
+#btn:hover, #send-btn:hover, #mic:hover {
+  opacity: 0.8;
 }
 
 /* ====== Chat bubbles ====== */
