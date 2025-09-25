@@ -6,32 +6,25 @@
 <title>Alfa AI - Virtual Assistant</title>
 <link rel="shortcut icon" href="logo.jpg" type="image/x-icon">
 <link rel="stylesheet" href="style.css">
-<style>
-  body, html { margin:0; padding:0; font-family:Arial,sans-serif; background:#fff; color:#000; display:flex; flex-direction:column; align-items:center; }
-  #logo { width:200px; height:auto; margin-top:20px; border-radius:10px; }
-  h1 { margin:20px 0 10px; font-size:1.5em; text-align:center; }
-  #voice { width:50px; height:50px; margin-bottom:20px; }
-  #btn { padding:10px 20px; font-size:1em; cursor:pointer; border-radius:5px; border:none; background:#0af; color:#fff; display:flex; align-items:center; gap:10px; }
-  #messages { width:90%; max-width:600px; height:300px; overflow-y:auto; border:1px solid #ccc; padding:10px; margin:20px 0; border-radius:10px; background:#f9f9f9; }
-  .bubble { padding:10px; margin:5px 0; border-radius:15px; max-width:70%; word-wrap:break-word; }
-  .user { background:#d1e7ff; align-self:flex-end; }
-  .alfa { background:#e5e5e5; align-self:flex-start; }
-  .timestamp { font-size:0.7em; margin-left:5px; color:#888; }
-</style>
 </head>
 <body>
 
+<!-- Logo video -->
 <video id="logo" autoplay muted loop>
   <source src="logo.mp4" type="video/mp4">
 </video>
 
 <h1>I'm <span id="name">Alfa AI</span>, Your <span id="va">Virtual Assistant</span></h1>
+
+<!-- Voice listening gif -->
 <img src="voice.gif" alt="voice" id="voice">
 
+<!-- Chat messages container -->
 <div id="messages"></div>
 
+<!-- Input box & mic button -->
+<input type="text" id="prompt" placeholder="Type your message...">
 <button id="btn"><img src="mic.svg" alt="mic"><span id="content"> Click here to talk to me</span></button>
-<input type="text" id="prompt" placeholder="Type your message..." style="width:90%; max-width:600px; padding:10px; margin-bottom:20px; border-radius:5px; border:1px solid #ccc;">
 
 <script src="script.js"></script>
 </body>
