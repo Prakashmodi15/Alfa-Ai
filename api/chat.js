@@ -1,3 +1,4 @@
+// api/chat.js
 export default async function handler(req, res) {
     if (req.method !== "POST") {
         return res.status(405).json({ response: "Method Not Allowed" });
@@ -11,16 +12,20 @@ export default async function handler(req, res) {
             headers: {
                 "Content-Type": "application/json",
                 "Authorization": `Bearer ${process.env.OPENROUTER_API_KEY}`,
-                "HTTP-Referer": "https://your-vercel-app.vercel.app", // अपना Vercel domain
-                "X-Title": "Alfa AI Chat"
             },
             body: JSON.stringify({
-                model: "openai/gpt-3.5-turbo", // आप कोई भी model चुन सकते हो
+                model: "openai/gpt-3.5-turbo",
                 messages: [{ role: "user", content: message }]
             })
         });
 
         const data = await response.json();
+
+        // error handling agar choices exist na kare
+        if (!data.choices || !data.choices[0]) {
+            return res.status(500).json({ response: "⚠️ OpenRouter API se response nahi mila." });
+        }
+
         res.status(200).json({ response: data.choices[0].message.content });
     } catch (error) {
         console.error("API error:", error);
