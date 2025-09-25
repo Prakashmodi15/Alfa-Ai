@@ -1,39 +1,33 @@
 {
   "name": "Alfa AI - Virtual Assistant",
   "short_name": "Alfa AI",
-  "description": "Alfa AI - Your Virtual Assistant, voice-enabled and AI powered.",
+  "description": "Alfa AI virtual assistant app by Prakash Modi",
   "start_url": "/index.html",
   "scope": "/",
   "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#000000",
   "theme_color": "#00aaff",
+  "background_color": "#000000",
   "lang": "hi",
+  "dir": "ltr",
+  "id": "alfa-ai",
   "icons": [
     {
-      "src": "logo.jpg",
+      "src": "logo-192.png",
       "sizes": "192x192",
-      "type": "image/jpeg"
+      "type": "image/png"
     },
     {
-      "src": "logo.jpg",
+      "src": "logo-512.png",
       "sizes": "512x512",
-      "type": "image/jpeg"
+      "type": "image/png"
     }
   ],
   "related_applications": [
     {
       "platform": "webapp",
-      "url": "https://alfa-ai.vercel.app/",
-      "id": "com.prakash.alfaai"
-    }
-  ],
-  "shortcuts": [
-    {
-      "name": "Alfa AI Chat",
-      "short_name": "Chat",
       "url": "/index.html",
-      "description": "Open Alfa AI chat directly"
+      "id": "com.prakash.alfaai"
     }
   ],
   "protocol_handlers": [
@@ -42,11 +36,16 @@
       "url": "/index.html"
     }
   ],
+  "shortcuts": [
+    {
+      "name": "Open Alfa AI",
+      "url": "/index.html",
+      "description": "Quick access to Alfa AI virtual assistant"
+    }
+  ],
   "categories": [
     "productivity",
     "education",
-    "entertainment",
-    "utilities",
-    "social"
+    "entertainment"
   ]
 }
