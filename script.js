@@ -1,13 +1,15 @@
+// ====== Elements ======
 const btn = document.querySelector("#btn");
-const sendBtn = document.querySelector("#send-btn"); // ✅ नया जोड़ा
-const content = document.querySelector("#content");
-const voice = document.querySelector("#voice");
+const sendBtn = document.querySelector("#send-btn");
 const messagesDiv = document.querySelector("#messages");
 const promptInput = document.querySelector("#prompt");
+const voice = document.querySelector("#voice");
 
+// ====== Speech Synthesis Setup ======
 const synth = window.speechSynthesis;
 let hindiVoice = null;
 
+// Load available voices
 function loadVoices() {
     const voices = synth.getVoices();
     hindiVoice = voices.find(v => v.lang === 'hi-IN');
@@ -15,13 +17,25 @@ function loadVoices() {
 loadVoices();
 if (synth.onvoiceschanged !== undefined) synth.onvoiceschanged = loadVoices;
 
+// ====== Speak Function (Hindi + English Support) ======
 function speak(text) {
     if (synth.speaking) synth.cancel();
     setTimeout(() => {
-        text = text.replace(/[\u{1F600}-\u{1F6FF}]/gu, '').replace(/[^\w\s.,?!]/g,'');
+        // Remove emojis but keep Hindi/English characters
+        text = text.replace(/[\u{1F600}-\u{1F6FF}]/gu, ''); 
+
         const utter = new SpeechSynthesisUtterance(text);
-        if(hindiVoice) utter.voice = hindiVoice;
-        utter.lang = 'hi-IN';
+
+        // Detect language
+        if (/[^\x00-\x7F]/.test(text)) {
+            // Contains Hindi characters
+            if(hindiVoice) utter.voice = hindiVoice;
+            utter.lang = 'hi-IN';
+        } else {
+            // English text
+            utter.lang = 'en-US';
+        }
+
         utter.pitch = 1;
         utter.rate = 1;
         utter.volume = 1;
@@ -29,6 +43,7 @@ function speak(text) {
     }, 200);
 }
 
+// ====== Speech Recognition Setup ======
 const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 const recognition = new SpeechRecognition();
 recognition.lang = 'hi-IN';
@@ -44,48 +59,54 @@ recognition.onresult = (e) => {
     processCommand(transcript.toLowerCase());
 };
 
-btn.addEventListener("click", () => { synth.cancel(); recognition.start(); });
+// ====== Button Events ======
+btn.addEventListener("click", () => {
+    synth.cancel();
+    recognition.start();
+});
 
-// ✅ Send button click event
 sendBtn.addEventListener("click", () => {
-    if(promptInput.value.trim() !== "") {
-        const message = promptInput.value.trim();
-        promptInput.value = "";
-        addMessage("User", message);
-        processCommand(message.toLowerCase());
-    }
+    const message = promptInput.value.trim();
+    if (!message) return;
+    promptInput.value = "";
+    addMessage("User", message);
+    processCommand(message.toLowerCase());
 });
 
-// ✅ Enter दबाने पर भेजने के लिए
 promptInput.addEventListener("keypress", (e) => {
-    if(e.key === "Enter" && promptInput.value.trim() !== "") {
-        const message = promptInput.value.trim();
-        promptInput.value = "";
-        addMessage("User", message);
-        processCommand(message.toLowerCase());
-    }
+    if (e.key === "Enter") sendBtn.click();
 });
 
+// ====== Add Chat Message ======
 function addMessage(sender, text, typing=false) {
     const div = document.createElement("div");
     div.className = "bubble " + sender.toLowerCase();
-    if(typing) div.classList.add("typing");
+    if (typing) div.classList.add("typing");
     div.innerHTML = text + (typing ? '' : `<span class="timestamp">${new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</span>`);
     messagesDiv.appendChild(div);
     messagesDiv.scrollTop = messagesDiv.scrollHeight;
     return div;
 }
 
+// ====== Process Command / AI Logic ======
 async function processCommand(message) {
-    // Local commands
+    // ---- Local Commands ----
     if(message.includes("hello") || message.includes("हेलो")) { speak("नमस्ते सर, मैं आपकी क्या मदद कर सकती हूँ?"); return; }
     if(message.includes("who are you") || message.includes("कौन हो तुम")) { speak("मैं Alfa AI हूँ, जिसे Prakash Modi ने बनाया है।"); return; }
     if(message.includes("open youtube") || message.includes("यूट्यूब खोलो")) { speak("यूट्यूब खोल रही हूँ"); window.open("https://youtube.com/","_blank"); return; }
     if(message.includes("open google") || message.includes("गूगल खोलो")) { speak("गूगल खोल रही हूँ"); window.open("https://google.com/","_blank"); return; }
-    if(message.includes("time") || message.includes("समय")) { const time = new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}); speak(`अभी ${time} हो रहे हैं।`); return; }
-    if(message.includes("date") || message.includes("तारीख")) { const date = new Date().toLocaleDateString("hi-IN", {day:"numeric",month:"long"}); speak(`आज ${date} है।`); return; }
+    if(message.includes("time") || message.includes("समय")) { 
+        const time = new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}); 
+        speak(`अभी ${time} हो रहे हैं।`); 
+        return; 
+    }
+    if(message.includes("date") || message.includes("तारीख")) { 
+        const date = new Date().toLocaleDateString("hi-IN", {day:"numeric",month:"long"}); 
+        speak(`आज ${date} है।`); 
+        return; 
+    }
 
-    // API call
+    // ---- AI / API Call ----
     const typingDiv = addMessage("Alfa", `<span class="dot-typing"><span></span><span></span><span></span></span>`, true);
     try {
         const res = await fetch("/api/alfa", {
