@@ -8,8 +8,8 @@
 body {
   width: 100%;
   min-height: 100vh;
-  background-color: var(--bg-color, #000);
-  color: var(--text-color, #fff);
+  background-color: #ffffff; /* पूरी तरह white */
+  color: #000;               /* default text black */
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -17,15 +17,6 @@ body {
   font-family: "Segoe UI", sans-serif;
   overflow-x: hidden;
   transition: all 0.3s ease;
-}
-
-/* ====== Light Mode Variables ====== */
-body.light-mode {
-  --bg-color: #f5f5f5;
-  --text-color: #000;
-  --chat-bg: #fff;
-  --input-bg: #eee;
-  --btn-bg: linear-gradient(to right, rgb(21,145,207), rgb(201,41,116));
 }
 
 /* ====== Logo ====== */
@@ -39,7 +30,7 @@ body.light-mode {
 
 /* ====== Heading ====== */
 h1 {
-  color: var(--text-color);
+  color: #000;
   font-size: 1.8rem;
   text-align: center;
   line-height: 1.4;
@@ -59,16 +50,16 @@ h1 {
   width: 100%;
   max-width: 600px;
   height: 55vh;
-  background: var(--chat-bg, #111);
+  background: #f5f5f5; /* light grey for contrast */
   border-radius: 12px;
   padding: 15px;
   overflow-y: auto;
   margin-bottom: 15px;
-  color: var(--text-color);
+  color: #000;
 }
 
 /* ====== Chat Input ====== */
-#chat-box {
+#input-container {
   width: 100%;
   max-width: 600px;
   display: flex;
@@ -76,14 +67,15 @@ h1 {
   gap: 10px;
   padding: 8px;
   border-radius: 12px;
-  background: var(--input-bg, #1e1e1e);
+  background: #ffffff; /* white input container */
   margin-bottom: 10px;
+  border: 1px solid #ccc;
 }
 
 #prompt {
   flex: 1;
   padding: 12px;
-  border: none;
+  border: 1px solid #ccc;
   border-radius: 20px;
   outline: none;
   font-size: 15px;
@@ -91,33 +83,54 @@ h1 {
   color: #000;
 }
 
-#btn, #mic {
+/* ====== Buttons ====== */
+#btn, #send-btn, #mic {
   padding: 12px 16px;
   border: none;
   border-radius: 50px;
-  background: var(--btn-bg);
+  background: linear-gradient(to right, rgb(21,145,207), rgb(201,41,116));
   color: #fff;
   cursor: pointer;
   font-size: 14px;
 }
 
+/* ====== Chat bubbles ====== */
+.bubble.user {
+  background: #d1e7ff; /* light blue */
+  color: #000;
+  padding: 8px 12px;
+  border-radius: 12px;
+  margin-bottom: 8px;
+  display: inline-block;
+}
+
+.bubble.alfa {
+  background: #ffe0e0; /* light pink */
+  color: #000;
+  padding: 8px 12px;
+  border-radius: 12px;
+  margin-bottom: 8px;
+  display: inline-block;
+}
+
+/* Timestamp */
+.timestamp {
+  font-size: 10px;
+  color: #555;
+  margin-left: 6px;
+}
+
 /* ====== Responsive ====== */
 @media screen and (max-width: 768px) {
-  h1 {
-    font-size: 1.4rem;
-    padding: 0 10px;
-  }
+  h1 { font-size: 1.4rem; padding: 0 10px; }
+  #messages { height: 50vh; }
+  #prompt { font-size: 14px; }
+  #btn, #send-btn, #mic { font-size: 12px; padding: 10px; }
+}
 
-  #messages {
-    height: 50vh;
-  }
-
-  #prompt {
-    font-size: 14px;
-  }
-
-  #btn, #mic {
-    font-size: 12px;
-    padding: 10px;
-  }
+@media screen and (max-width: 480px){
+  #prompt { font-size:13px; }
+  #send-btn, #btn, #mic { font-size:12px; padding:8px; }
+  h1 { font-size:1.2rem; }
+  #messages { height:45vh; }
 }
