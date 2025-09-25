@@ -4,11 +4,11 @@ import csv from 'csv-parser';
 
 let itemsCache = null;
 
-// CSV Load function (server-side)
+// Server-side: CSV load once
 const loadCSV = () => {
   return new Promise((resolve, reject) => {
     const results = [];
-    fs.createReadStream(path.join(process.cwd(), 'List of Items.csv'))
+    fs.createReadStream(path.join(process.cwd(), 'List of Items.csv')) // CSV का location
       .pipe(csv())
       .on('data', (data) => results.push(data))
       .on('end', () => resolve(results))
@@ -17,37 +17,23 @@ const loadCSV = () => {
 };
 
 export default async function handler(req, res) {
-  if (req.method !== "POST") 
-    return res.status(405).json({ error: "Only POST allowed" });
+  if (req.method !== "POST") return res.status(405).json({ error: "Only POST allowed" });
 
   const { prompt } = req.body;
-  if (!prompt || prompt.trim() === "") 
-    return res.status(400).json({ error: "Message is required" });
+  if (!prompt || prompt.trim() === "") return res.status(400).json({ error: "Message is required" });
 
   // Load CSV once
-  if (!itemsCache) {
-    try {
-      itemsCache = await loadCSV();
-      console.log("CSV loaded:", itemsCache.length, "items");
-    } catch(err) {
-      console.error("CSV Load Error:", err);
-      return res.status(500).json({ error: "CSV Load failed" });
-    }
-  }
+  if (!itemsCache) itemsCache = await loadCSV();
 
-  // Search CSV
   const lowerPrompt = prompt.toLowerCase();
-  const item = itemsCache.find(row => 
-    (row.Name?.toLowerCase() === lowerPrompt) || 
-    (row['Alias']?.toLowerCase() === lowerPrompt) || 
-    (row['Print Name']?.toLowerCase() === lowerPrompt)
-  );
 
+  // CSV search
+  const item = itemsCache.find(row => row.Name?.toLowerCase() === lowerPrompt || row['Alias']?.toLowerCase() === lowerPrompt);
   if (item) {
-    return res.status(200).json({ reply: `Item: ${item.Name}, Price: ₹${item['Sale Price-B']}` });
+    return res.status(200).json({ reply: `Item: ${item.Name}, Price: ₹${item['Sale Price-B'] || item['Sale Price'] || "N/A"}` });
   }
 
-  // Else fallback to OpenRouter AI
+  // Fallback: OpenRouter AI
   try {
     const r = await fetch("https://openrouter.ai/api/v1/chat/completions", {
       method: "POST",
@@ -67,8 +53,7 @@ export default async function handler(req, res) {
     });
 
     const data = await r.json();
-    if (!r.ok) 
-      return res.status(r.status).json({ error: data.error?.message || "OpenRouter API error" });
+    if (!r.ok) return res.status(r.status).json({ error: data.error?.message || "OpenRouter API error" });
 
     const reply = data.choices?.[0]?.message?.content || "माफ़ करें, इस समय मैं जवाब नहीं दे पा रहा हूं।";
     res.status(200).json({ reply });
