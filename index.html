@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Alfa AI - Prakash Modi ka Personal Assistant</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="manifest" href="manifest.json">
     <style>
         * {
             margin: 0;
@@ -20,6 +19,12 @@
             height: 100vh;
             overflow: hidden;
             display: flex;
+            transition: background 0.3s, color 0.3s;
+        }
+
+        body.light-theme {
+            background: linear-gradient(135deg, #f5f5f5 0%, #e0e0e0 100%);
+            color: #000000;
         }
 
         .container {
@@ -37,6 +42,13 @@
             flex-direction: column;
             padding: 15px;
             overflow-y: auto;
+            transition: background 0.3s, border-color 0.3s;
+        }
+
+        body.light-theme .sidebar {
+            background: rgba(255, 255, 255, 0.9);
+            border-right: 1px solid #d0d0d0;
+            color: #000000;
         }
 
         .logo {
@@ -45,6 +57,10 @@
             padding: 10px 0 20px;
             border-bottom: 1px solid #2d2d3a;
             margin-bottom: 15px;
+        }
+
+        body.light-theme .logo {
+            border-bottom: 1px solid #d0d0d0;
         }
 
         .logo-img {
@@ -105,6 +121,10 @@
             background: rgba(108, 99, 255, 0.1);
         }
 
+        body.light-theme .history-item:hover {
+            background: rgba(108, 99, 255, 0.2);
+        }
+
         .history-item i {
             margin-right: 10px;
             color: #6c63ff;
@@ -114,6 +134,10 @@
             margin-top: auto;
             padding-top: 15px;
             border-top: 1px solid #2d2d3a;
+        }
+
+        body.light-theme .settings {
+            border-top: 1px solid #d0d0d0;
         }
 
         .settings-btn {
@@ -127,6 +151,10 @@
 
         .settings-btn:hover {
             background: rgba(108, 99, 255, 0.1);
+        }
+
+        body.light-theme .settings-btn:hover {
+            background: rgba(108, 99, 255, 0.2);
         }
 
         .settings-btn i {
@@ -150,6 +178,13 @@
             align-items: center;
             justify-content: space-between;
             background: rgba(25, 25, 40, 0.8);
+            transition: background 0.3s, border-color 0.3s;
+        }
+
+        body.light-theme .chat-header {
+            background: rgba(255, 255, 255, 0.8);
+            border-bottom: 1px solid #d0d0d0;
+            color: #000000;
         }
 
         .chat-title {
@@ -169,6 +204,10 @@
             margin-left: 15px;
             cursor: pointer;
             transition: color 0.3s;
+        }
+
+        body.light-theme .chat-action-btn {
+            color: #666666;
         }
 
         .chat-action-btn:hover {
@@ -211,6 +250,12 @@
             border: 1px solid #2d2d3a;
         }
 
+        body.light-theme .ai-message {
+            background: rgba(240, 240, 240, 0.8);
+            border: 1px solid #d0d0d0;
+            color: #000000;
+        }
+
         .message-time {
             font-size: 12px;
             opacity: 0.7;
@@ -222,6 +267,12 @@
             padding: 20px 25px;
             border-top: 1px solid #2d2d3a;
             background: rgba(25, 25, 40, 0.8);
+            transition: background 0.3s, border-color 0.3s;
+        }
+
+        body.light-theme .input-container {
+            background: rgba(255, 255, 255, 0.8);
+            border-top: 1px solid #d0d0d0;
         }
 
         .input-box {
@@ -232,6 +283,11 @@
             border: 1px solid #2d2d3a;
             padding: 10px 15px;
             transition: border-color 0.3s;
+        }
+
+        body.light-theme .input-box {
+            background: rgba(240, 240, 240, 0.8);
+            border: 1px solid #d0d0d0;
         }
 
         .input-box:focus-within {
@@ -248,6 +304,18 @@
             max-height: 120px;
             outline: none;
             padding: 8px 0;
+        }
+
+        body.light-theme .text-input {
+            color: #000000;
+        }
+
+        .text-input::placeholder {
+            color: #a0a0c0;
+        }
+
+        body.light-theme .text-input::placeholder {
+            color: #666666;
         }
 
         .input-actions {
@@ -270,6 +338,10 @@
             display: flex;
             align-items: center;
             justify-content: center;
+        }
+
+        body.light-theme .input-btn {
+            color: #666666;
         }
 
         .input-btn:hover {
@@ -337,6 +409,10 @@
             max-width: 600px;
         }
 
+        body.light-theme .welcome-subtitle {
+            color: #666666;
+        }
+
         .features {
             display: flex;
             flex-wrap: wrap;
@@ -352,6 +428,10 @@
             padding: 20px;
             width: 180px;
             transition: transform 0.3s;
+        }
+
+        body.light-theme .feature {
+            background: rgba(240, 240, 240, 0.8);
         }
 
         .feature:hover {
@@ -372,6 +452,10 @@
         .feature-desc {
             font-size: 12px;
             color: #a0a0c0;
+        }
+
+        body.light-theme .feature-desc {
+            color: #666666;
         }
 
         /* Responsive Design */
@@ -417,6 +501,10 @@
             background: rgba(40, 40, 60, 0.5);
         }
 
+        body.light-theme ::-webkit-scrollbar-track {
+            background: rgba(200, 200, 200, 0.5);
+        }
+
         ::-webkit-scrollbar-thumb {
             background: #6c63ff;
             border-radius: 3px;
@@ -447,6 +535,13 @@
             width: 90%;
             max-width: 500px;
             border: 1px solid #2d2d3a;
+            transition: background 0.3s, border-color 0.3s;
+        }
+
+        body.light-theme .modal-content {
+            background: #ffffff;
+            border: 1px solid #d0d0d0;
+            color: #000000;
         }
 
         .modal-header {
@@ -469,6 +564,10 @@
             cursor: pointer;
         }
 
+        body.light-theme .close-modal {
+            color: #666666;
+        }
+
         .setting-option {
             margin-bottom: 20px;
         }
@@ -488,6 +587,13 @@
             color: white;
         }
 
+        body.light-theme .setting-select, 
+        body.light-theme .setting-input {
+            background: rgba(240, 240, 240, 0.8);
+            border: 1px solid #d0d0d0;
+            color: #000000;
+        }
+
         .save-settings {
             background: linear-gradient(90deg, #6c63ff, #a855f7);
             color: white;
@@ -498,6 +604,50 @@
             font-weight: 500;
             width: 100%;
             margin-top: 10px;
+        }
+
+        /* Typing Indicator */
+        .typing-indicator {
+            display: flex;
+            align-items: center;
+            padding: 10px 15px;
+            margin-bottom: 20px;
+            align-self: flex-start;
+            background: rgba(40, 40, 60, 0.8);
+            border-radius: 18px;
+            border: 1px solid #2d2d3a;
+            max-width: 120px;
+        }
+
+        body.light-theme .typing-indicator {
+            background: rgba(240, 240, 240, 0.8);
+            border: 1px solid #d0d0d0;
+        }
+
+        .typing-dots {
+            display: flex;
+            margin-left: 8px;
+        }
+
+        .typing-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background-color: #a0a0c0;
+            margin: 0 2px;
+            animation: typingAnimation 1.4s infinite ease-in-out;
+        }
+
+        body.light-theme .typing-dot {
+            background-color: #666666;
+        }
+
+        .typing-dot:nth-child(1) { animation-delay: -0.32s; }
+        .typing-dot:nth-child(2) { animation-delay: -0.16s; }
+
+        @keyframes typingAnimation {
+            0%, 80%, 100% { transform: scale(0.8); opacity: 0.5; }
+            40% { transform: scale(1); opacity: 1; }
         }
     </style>
 </head>
@@ -576,7 +726,7 @@
                             <div class="feature-desc">Current weather and forecasts</div>
                         </div>
                         <div class="feature">
-                            <i class="fas fa-voice feature-icon"></i>
+                            <i class="fas fa-microphone feature-icon"></i>
                             <div class="feature-title">Voice Support</div>
                             <div class="feature-desc">Type ya voice dono se baat karein</div>
                         </div>
@@ -589,7 +739,7 @@
                     <textarea class="text-input" id="textInput" placeholder="Type your message here... (Ctrl+Enter to send)" rows="1"></textarea>
                     <div class="input-actions">
                         <button class="input-btn" id="voiceBtn" title="Voice Input">
-                            <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTEyIDE1QzE0LjIwOTEgMTUgMTYgMTMuMjA5MSAxNiAxMVY2QzE2IDMuNzkwODYgMTQuMjA5MSAyIDEyIDJDOS43OTA4NiAyIDggMy43OTA4NiA4IDZWMTFDOCAxMy4yMDkxIDkuNzkwODYgMTUgMTIgMTVaIiBmaWxsPSIjYTBhMGMwIi8+CjxwYXRoIGQ9Ik0xOSAxMVYxMkMxOSAxNS44NjYgMTUuODY2IDE5IDEyIDE5QzguMTM0MDEgMTkgNSAxNS44NjYgNSAxMlYxMUg3VjEyQzcgMTQuNzYxNCA5LjIzODU4IDE3IDEyIDE3QzE0Ljc2MTQgMTcgMTcgMTQuNzYxNCAxNyAxMlYxMUgxOVoiIGZpbGw9IiNhMGEwYzAiLz4KPHJlY3QgeD0iMTAiIHk9IjIwIiB3aWR0aD0iNCIgaGVpZ2h0PSI0IiByeD0iMSIgZmlsbD0iI2EwYTBjMCIvPgo8L3N2Zz4K" alt="Voice Icon" class="voice-icon">
+                            <i class="fas fa-microphone"></i>
                         </button>
                         <button class="input-btn send-btn" id="sendBtn" title="Send Message">
                             <i class="fas fa-paper-plane"></i>
@@ -648,11 +798,34 @@
         const closeModal = document.getElementById('closeModal');
         const saveSettings = document.getElementById('saveSettings');
         const themeToggle = document.getElementById('themeToggle');
+        const voiceSelect = document.getElementById('voiceSelect');
+        const speedSelect = document.getElementById('speedSelect');
+        const themeSelect = document.getElementById('themeSelect');
+
+        // Load saved settings
+        function loadSettings() {
+            const savedSettings = localStorage.getItem('alfaSettings');
+            if (savedSettings) {
+                const settings = JSON.parse(savedSettings);
+                voiceSelect.value = settings.voice || 'default';
+                speedSelect.value = settings.speed || 'normal';
+                themeSelect.value = settings.theme || 'dark';
+                
+                // Apply theme
+                if (settings.theme === 'light') {
+                    document.body.classList.add('light-theme');
+                    themeToggle.innerHTML = '<i class="fas fa-moon"></i>';
+                } else if (settings.theme === 'dark') {
+                    document.body.classList.remove('light-theme');
+                    themeToggle.innerHTML = '<i class="fas fa-sun"></i>';
+                }
+            }
+        }
 
         // Auto-resize textarea
         textInput.addEventListener('input', function() {
             this.style.height = 'auto';
-            this.style.height = (this.scrollHeight) + 'px';
+            this.style.height = Math.min(this.scrollHeight, 120) + 'px';
         });
 
         // Send message function
@@ -679,7 +852,17 @@
                 removeTypingIndicator();
                 const aiResponse = generateAIResponse(message);
                 addMessage(aiResponse, 'ai');
-            }, 1500);
+            }, getResponseDelay());
+        }
+
+        // Get response delay based on settings
+        function getResponseDelay() {
+            const speed = speedSelect.value;
+            switch(speed) {
+                case 'fast': return 800;
+                case 'slow': return 2500;
+                default: return 1500;
+            }
         }
 
         // Add message to chat
@@ -703,12 +886,21 @@
         // Show typing indicator
         function showTypingIndicator() {
             const typingDiv = document.createElement('div');
-            typingDiv.classList.add('message', 'ai-message');
+            typingDiv.classList.add('typing-indicator');
             typingDiv.id = 'typingIndicator';
             
-            const typingContent = document.createElement('div');
-            typingContent.innerHTML = '<i class="fas fa-ellipsis-h"></i> Alfa AI is typing...';
-            typingDiv.appendChild(typingContent);
+            const typingText = document.createElement('span');
+            typingText.textContent = 'Alfa AI typing';
+            typingDiv.appendChild(typingText);
+            
+            const typingDots = document.createElement('div');
+            typingDots.classList.add('typing-dots');
+            for (let i = 0; i < 3; i++) {
+                const dot = document.createElement('div');
+                dot.classList.add('typing-dot');
+                typingDots.appendChild(dot);
+            }
+            typingDiv.appendChild(typingDots);
             
             messagesContainer.appendChild(typingDiv);
             scrollToBottom();
@@ -755,11 +947,12 @@
         }
 
         // Voice recognition
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
         let recognition = null;
         let isListening = false;
 
-        if ('webkitSpeechRecognition' in window) {
-            recognition = new webkitSpeechRecognition();
+        if (SpeechRecognition) {
+            recognition = new SpeechRecognition();
             recognition.continuous = false;
             recognition.interimResults = false;
             recognition.lang = 'hi-IN';
@@ -767,7 +960,7 @@
             recognition.onstart = function() {
                 isListening = true;
                 voiceBtn.classList.add('listening');
-                voiceBtn.innerHTML = '<img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjI0IiBoZWlnaHQ9IjI0IiBmaWxsPSIjZmY2YjZiIi8+CjxwYXRoIGQ9Ik02IDEySDE4IiBzdHJva2U9IndoaXRlIiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgo8L3N2Zz4K" alt="Stop Recording" class="voice-icon">';
+                voiceBtn.innerHTML = '<i class="fas fa-microphone-slash"></i>';
             };
 
             recognition.onresult = function(event) {
@@ -778,15 +971,19 @@
 
             recognition.onerror = function(event) {
                 console.error('Speech recognition error', event.error);
+                if (event.error === 'not-allowed') {
+                    alert('Microphone access denied. Please allow microphone access to use voice input.');
+                }
             };
 
             recognition.onend = function() {
                 isListening = false;
                 voiceBtn.classList.remove('listening');
-                voiceBtn.innerHTML = '<img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTEyIDE1QzE0LjIwOTEgMTUgMTYgMTMuMjA5MSAxNiAxMVY2QzE2IDMuNzkwODYgMTQuMjA5MSAyIDEyIDJDOS43OTA4NiAyIDggMy43OTA4NiA4IDZWMTFDOCAxMy4yMDkxIDkuNzkwODYgMTUgMTIgMTVaIiBmaWxsPSIjYTBhMGMwIi8+CjxwYXRoIGQ9Ik0xOSAxMVYxMkMxOSAxNS44NjYgMTUuODY2IDE5IDEyIDE5QzguMTM0MDEgMTkgNSAxNS44NjYgNSAxMlYxMUg3VjEyQzcgMTQuNzYxNCA5LjIzODU4IDE3IDEyIDE3QzE0Ljc2MTQgMTcgMTcgMTQuNzYxNCAxNyAxMlYxMUgxOVoiIGZpbGw9IiNhMGEwYzAiLz4KPHJlY3QgeD0iMTAiIHk9IjIwIiB3aWR0aD0iNCIgaGVpZ2h0PSI0IiByeD0iMSIgZmlsbD0iI2EwYTBjMCIvPgo8L3N2Zz4K" alt="Voice Icon" class="voice-icon">';
+                voiceBtn.innerHTML = '<i class="fas fa-microphone"></i>';
             };
         } else {
             voiceBtn.style.display = 'none';
+            console.log('Speech recognition not supported in this browser');
         }
 
         // Event listeners
@@ -794,26 +991,62 @@
 
         textInput.addEventListener('keydown', function(e) {
             if (e.key === 'Enter' && e.ctrlKey) {
+                e.preventDefault();
                 sendMessage();
             }
         });
 
         voiceBtn.addEventListener('click', function() {
+            if (!SpeechRecognition) {
+                alert('Voice recognition is not supported in your browser. Please try Chrome or Edge.');
+                return;
+            }
+            
             if (isListening) {
                 recognition.stop();
             } else {
-                recognition.start();
+                try {
+                    recognition.start();
+                } catch (error) {
+                    console.error('Error starting speech recognition:', error);
+                }
             }
         });
 
         newChatBtn.addEventListener('click', function() {
+            // Clear all messages
             messagesContainer.innerHTML = '';
+            
+            // Show welcome screen
             const welcomeScreen = document.createElement('div');
             welcomeScreen.classList.add('welcome-screen');
             welcomeScreen.innerHTML = `
                 <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTAwIiBoZWlnaHQ9IjUwMCIgdmlld0JveD0iMCAwIDUwMCA1MDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSI1MDAiIGhlaWdodD0iNTAwIiByeD0iNTAiIGZpbGw9InVybCgjcGFpbnQwX2xpbmVhcikiLz4KPHBhdGggZD0iTTE1MCAyNTBMMzUwIDE1ME0zNTAgMzUwTDE1MCAyNTBMMzUwIDM1MFpNMzUwIDE1MEwxNTAgMjUwTDM1MCAxNTBaIiBzdHJva2U9IndoaXRlIiBzdHJva2Utd2lkdGg9IjIwIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KPGRlZnM+CjxsaW5lYXJHcmFkaWVudCBpZD0icGFpbnQwX2xpbmVhciIgeDE9IjAiIHkxPSIwIiB4Mj0iNTAwIiB5Mj0iNTAwIiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+CjxzdG9wIHN0b3AtY29sb3I9IiM2YzYzZmYiLz4KPHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjYTg1NWY3Ii8+CjwvbGluZWFyR3JhZGllbnQ+CjwvZGVmcz4KPC9zdmc+" alt="Alfa AI Logo" class="welcome-logo">
                 <h1 class="welcome-title">Alfa AI - Prakash Modi ka Assistant</h1>
                 <p class="welcome-subtitle">Main aapka personal AI assistant hoon. Aap mujhse kuch bhi pooch sakte hain.</p>
+                
+                <div class="features">
+                    <div class="feature">
+                        <i class="fas fa-code feature-icon"></i>
+                        <div class="feature-title">Programming Help</div>
+                        <div class="feature-desc">Code examples aur debugging assistance</div>
+                    </div>
+                    <div class="feature">
+                        <i class="fas fa-newspaper feature-icon"></i>
+                        <div class="feature-title">Real-time News</div>
+                        <div class="feature-desc">Latest news from various sources</div>
+                    </div>
+                    <div class="feature">
+                        <i class="fas fa-cloud-sun feature-icon"></i>
+                        <div class="feature-title">Weather Updates</div>
+                        <div class="feature-desc">Current weather and forecasts</div>
+                    </div>
+                    <div class="feature">
+                        <i class="fas fa-microphone feature-icon"></i>
+                        <div class="feature-title">Voice Support</div>
+                        <div class="feature-desc">Type ya voice dono se baat karein</div>
+                    </div>
+                </div>
             `;
             messagesContainer.appendChild(welcomeScreen);
         });
@@ -828,6 +1061,22 @@
         });
 
         saveSettings.addEventListener('click', function() {
+            const voice = voiceSelect.value;
+            const speed = speedSelect.value;
+            const theme = themeSelect.value;
+
+            // Save to localStorage
+            localStorage.setItem('alfaSettings', JSON.stringify({voice, speed, theme}));
+            
+            // Apply theme immediately
+            if (theme === 'light') {
+                document.body.classList.add('light-theme');
+                themeToggle.innerHTML = '<i class="fas fa-moon"></i>';
+            } else if (theme === 'dark') {
+                document.body.classList.remove('light-theme');
+                themeToggle.innerHTML = '<i class="fas fa-sun"></i>';
+            }
+            
             alert('Settings saved successfully!');
             settingsModal.style.display = 'none';
         });
@@ -837,8 +1086,18 @@
             document.body.classList.toggle('light-theme');
             if (document.body.classList.contains('light-theme')) {
                 themeToggle.innerHTML = '<i class="fas fa-moon"></i>';
+                // Update saved settings
+                const savedSettings = JSON.parse(localStorage.getItem('alfaSettings') || '{}');
+                savedSettings.theme = 'light';
+                localStorage.setItem('alfaSettings', JSON.stringify(savedSettings));
+                themeSelect.value = 'light';
             } else {
                 themeToggle.innerHTML = '<i class="fas fa-sun"></i>';
+                // Update saved settings
+                const savedSettings = JSON.parse(localStorage.getItem('alfaSettings') || '{}');
+                savedSettings.theme = 'dark';
+                localStorage.setItem('alfaSettings', JSON.stringify(savedSettings));
+                themeSelect.value = 'dark';
             }
         });
 
@@ -851,8 +1110,14 @@
 
         // Initialize with welcome message after a delay
         setTimeout(() => {
-            addMessage("Namaste! Main Alfa AI hoon, Prakash Modi ji ka personal assistant. Aapki kya madad kar sakta hoon?", 'ai');
+            // Only add welcome message if no messages exist
+            if (messagesContainer.children.length === 1) {
+                addMessage("Namaste! Main Alfa AI hoon, Prakash Modi ji ka personal assistant. Aapki kya madad kar sakta hoon?", 'ai');
+            }
         }, 1000);
+
+        // Load settings when page loads
+        window.addEventListener('DOMContentLoaded', loadSettings);
     </script>
 </body>
 </html>
