@@ -1,34 +1,27 @@
 // api/chat.js
 export default async function handler(req, res) {
-    if (req.method !== "POST") {
-        return res.status(405).json({ response: "Method Not Allowed" });
-    }
+    if (req.method === 'POST') {
+        const { message } = req.body;
 
-    const { message } = req.body;
-
-    try {
-        const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": `Bearer ${process.env.OPENROUTER_API_KEY}`,
-            },
-            body: JSON.stringify({
-                model: "openai/gpt-3.5-turbo",
-                messages: [{ role: "user", content: message }]
-            })
-        });
-
-        const data = await response.json();
-
-        // error handling agar choices exist na kare
-        if (!data.choices || !data.choices[0]) {
-            return res.status(500).json({ response: "⚠️ OpenRouter API se response nahi mila." });
+        if (!message) {
+            return res.status(400).json({ response: "⚠️ Message missing" });
         }
 
-        res.status(200).json({ response: data.choices[0].message.content });
-    } catch (error) {
-        console.error("API error:", error);
-        res.status(500).json({ response: "⚠️ OpenRouter API call failed." });
+        // Yahan aap real AI API call ya local logic laga sakte ho
+        let aiResponse;
+
+        // Simple local AI fallback
+        const lowerMessage = message.toLowerCase();
+        if (lowerMessage.includes('hello') || lowerMessage.includes('hi') || lowerMessage.includes('namaste')) {
+            aiResponse = "Namaste! Main Alfa AI hoon, Prakash Modi ji ka personal assistant.";
+        } else if (lowerMessage.includes('time') || lowerMessage.includes('samay')) {
+            aiResponse = `Abhi samay hai: ${new Date().toLocaleTimeString('hi-IN')}`;
+        } else {
+            aiResponse = "Dhanyavad! Main aapki query ko samajhne ki koshish kar raha hoon.";
+        }
+
+        return res.status(200).json({ response: aiResponse });
+    } else {
+        res.status(405).json({ response: "Method not allowed" });
     }
 }
