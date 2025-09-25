@@ -13,10 +13,14 @@ function loadVoices() {
 loadVoices();
 if (synth.onvoiceschanged !== undefined) synth.onvoiceschanged = loadVoices;
 
+// --- Speak function with emoji/characters removed ---
 function speak(text) {
     if (synth.speaking) synth.cancel();
     setTimeout(() => {
-        const utter = new SpeechSynthesisUtterance(text);
+        // Remove emoji and special characters for voice
+        const cleanText = text.replace(/([\u2700-\u27BF]|[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|\uD83E[\uDD00-\uDDFF]|[#*]+)/g, '');
+        if(cleanText.trim() === '') return; // nothing to speak
+        const utter = new SpeechSynthesisUtterance(cleanText);
         if(hindiVoice) utter.voice = hindiVoice;
         utter.lang = 'hi-IN';
         utter.pitch = 1;
