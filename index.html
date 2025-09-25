@@ -1,46 +1,47 @@
 <!DOCTYPE html>
 <html lang="hi">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Alfa AI - Virtual Assistant</title>
-<link rel="shortcut icon" href="logo.jpg" type="image/x-icon">
-<link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Alfa AI - Virtual Assistant</title>
+  <link rel="shortcut icon" href="logo.jpg" type="image/x-icon">
+  <link rel="stylesheet" href="style.css">
 
-<!-- PWA meta tags -->
-<link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#00aaff">
-<meta name="description" content="Alfa AI - Your Virtual Assistant, voice-enabled and AI powered.">
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <!-- PWA meta tags -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#00aaff">
+  <meta name="description" content="Alfa AI - Your Virtual Assistant, voice-enabled and AI powered.">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 </head>
 <body>
 
-<div id="chat-container">
+  <div id="chat-container">
 
-  <!-- Logo video -->
-  <video id="logo" autoplay muted loop>
-    <source src="logo.mp4" type="video/mp4">
-  </video>
+    <!-- Logo -->
+    <div id="logo-box">
+      <img src="logo-192.png" alt="Alfa AI" id="logo">
+    </div>
 
-  <h1>I'm <span id="name">Alfa AI</span>, Your <span id="va">Virtual Assistant</span></h1>
+    <!-- Heading -->
+    <h1>I'm <span id="name">Alfa AI</span>, Your <span id="va">Virtual Assistant</span></h1>
 
-  <!-- Voice listening gif -->
-  <img src="voice.gif" alt="voice" id="voice">
+    <!-- Voice listening gif -->
+    <img src="voice.gif" alt="voice" id="voice">
 
-  <!-- Chat messages container -->
-  <div id="messages"></div>
+    <!-- Chat messages container -->
+    <div id="messages"></div>
 
-  <!-- Input container -->
-  <div id="input-container">
-    <input type="text" id="prompt" placeholder="Type your message...">
-    <button id="send-btn">Send</button>
-    <button id="btn"><img src="mic.svg" alt="mic"></button>
+    <!-- Input container -->
+    <div id="input-container">
+      <input type="text" id="prompt" placeholder="Type your message...">
+      <button id="send-btn">Send</button>
+      <button id="btn"><img src="mic.svg" alt="mic"></button>
+    </div>
+
   </div>
 
-</div>
-
-<script src="script.js"></script>
+  <script src="script.js"></script>
 </body>
 </html>
