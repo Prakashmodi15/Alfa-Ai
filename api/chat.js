@@ -4,6 +4,12 @@ export default async function handler(req, res) {
   }
 
   try {
+    const { message } = req.body; // frontend से user का message ले रहे हैं
+
+    if (!message) {
+      return res.status(400).json({ error: "Message is required" });
+    }
+
     const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
       method: "POST",
       headers: {
@@ -11,13 +17,19 @@ export default async function handler(req, res) {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "openai/gpt-3.5-turbo",  // यहां अपना model डालना
-        messages: [{ role: "user", content: "Hello from Vercel!" }],
+        model: "openai/gpt-3.5-turbo", // आप चाहें तो कोई दूसरा मॉडल भी लगा सकते हैं
+        messages: [
+          { role: "system", content: "Aap ek helpful AI Assistant hain jiska naam Alfa AI hai." },
+          { role: "user", content: message }
+        ],
       }),
     });
 
     const data = await response.json();
-    return res.status(200).json(data);
+
+    const reply = data.choices?.[0]?.message?.content || "Maaf kijiye, koi reply nahi mila.";
+
+    return res.status(200).json({ reply });
 
   } catch (error) {
     return res.status(500).json({ error: error.message });
