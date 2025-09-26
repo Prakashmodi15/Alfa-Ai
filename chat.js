@@ -1,148 +1,78 @@
-// ================= API CALL FUNCTION =================
-async function sendMessageToAPI(message) {
-    try {
-        const response = await fetch("/api/chat", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ message })
-        });
-        const data = await response.json();
-        return data.reply;
-    } catch (error) {
-        console.error("Error:", error);
-        return "⚠️ Server se connect nahi ho pa raha.";
-    }
+// DOM Elements
+const chatContainer = document.getElementById('chat-container');
+const messageInput = document.getElementById('message-input');
+const sendBtn = document.getElementById('send-btn');
+const voiceBtn = document.getElementById('voice-btn');
+const clearBtn = document.getElementById('clear-btn');
+const themeToggle = document.getElementById('theme-toggle');
+const voiceSelect = document.getElementById('voice-select');
+const speedSelect = document.getElementById('speed-select');
+const ttsToggle = document.getElementById('tts-toggle');
+
+// Speech Synthesis Setup
+let voices = [];
+function loadVoices() {
+    voices = speechSynthesis.getVoices();
 }
 
-// ================= DOM ELEMENTS =================
-const menuToggle = document.getElementById('menuToggle');
-const sidebar = document.getElementById('sidebar');
-const messagesContainer = document.getElementById('messagesContainer');
-const messageInput = document.getElementById('messageInput');
-const sendButton = document.getElementById('sendButton');
-const voiceBtn = document.getElementById('voiceBtn');
-const newChatBtn = document.querySelector('.new-chat-btn');
-const settingsBtn = document.getElementById('settingsBtn');
-const settingsModal = document.getElementById('settingsModal');
-const closeModal = document.getElementById('closeModal');
-const saveSettings = document.getElementById('saveSettings');
-const themeToggle = document.getElementById('themeToggle');
-const voiceSelect = document.getElementById('voiceSelect');
-const speedSelect = document.getElementById('speedSelect');
-const themeSelect = document.getElementById('themeSelect');
-
-// ================= TOGGLE SIDEBAR =================
-menuToggle.addEventListener('click', () => {
-    sidebar.classList.toggle('open');
-});
-
-// ================= AUTO-RESIZE TEXTAREA =================
-messageInput.addEventListener('input', function() {
-    this.style.height = 'auto';
-    this.style.height = (this.scrollHeight) + 'px';
-});
-
-// ================= ADD MESSAGE TO UI =================
-function addMessage(content, sender) {
-    const messageDiv = document.createElement('div');
-    messageDiv.classList.add('message', `${sender}-message`);
-
-    const avatar = document.createElement('div');
-    avatar.classList.add('message-avatar');
-    avatar.textContent = sender === 'ai' ? 'α' : 'U';
-    messageDiv.appendChild(avatar);
-
-    const messageContent = document.createElement('div');
-    messageContent.classList.add('message-content');
-    messageContent.textContent = content;
-    messageDiv.appendChild(messageContent);
-
-    const messageTime = document.createElement('div');
-    messageTime.classList.add('message-time');
-    messageTime.textContent = getCurrentTime();
-    messageDiv.appendChild(messageTime);
-
-    messagesContainer.appendChild(messageDiv);
-    scrollToBottom();
+if ('speechSynthesis' in window) {
+    speechSynthesis.onvoiceschanged = loadVoices;
+    loadVoices();
 }
 
-// ================= TYPING INDICATOR =================
-function showTypingIndicator() {
-    const typingDiv = document.createElement('div');
-    typingDiv.classList.add('typing-indicator');
-    typingDiv.id = 'typingIndicator';
-    typingDiv.textContent = 'Alfa AI typing...';
-    messagesContainer.appendChild(typingDiv);
-    scrollToBottom();
-}
-function removeTypingIndicator() {
-    const typingIndicator = document.getElementById('typingIndicator');
-    if (typingIndicator) typingIndicator.remove();
-}
-
-// ================= UTILITIES =================
-function getCurrentTime() {
-    const now = new Date();
-    return `${now.getHours().toString().padStart(2,'0')}:${now.getMinutes().toString().padStart(2,'0')}`;
-}
-function scrollToBottom() {
-    messagesContainer.scrollTop = messagesContainer.scrollHeight;
-}
-
-// ================= TEXT-TO-SPEECH =================
+// Text-to-Speech Function
 function speakText(text) {
     if ('speechSynthesis' in window && isTTSEnabled()) {
+        // Cancel any ongoing speech
+        speechSynthesis.cancel();
+        
         const utterance = new SpeechSynthesisUtterance(text);
         utterance.lang = 'hi-IN';
         utterance.rate = getSpeechSpeed();
 
-        const voices = speechSynthesis.getVoices();
-        if (voiceSelect.value === 'female') {
-            utterance.voice = voices.find(v => v.lang.startsWith('hi') && v.name.toLowerCase().includes('female')) || voices[0];
-        } else if (voiceSelect.value === 'male') {
-            utterance.voice = voices.find(v => v.lang.startsWith('hi') && v.name.toLowerCase().includes('male')) || voices[0];
+        // Wait for voices to load if not available
+        if (voices.length === 0) {
+            setTimeout(() => {
+                if (voices.length > 0) {
+                    setVoiceGender(utterance);
+                    speechSynthesis.speak(utterance);
+                }
+            }, 100);
+        } else {
+            setVoiceGender(utterance);
+            speechSynthesis.speak(utterance);
         }
-
-        speechSynthesis.speak(utterance);
     }
 }
-function isTTSEnabled() {
-    const settings = JSON.parse(localStorage.getItem('alfaSettings') || '{}');
-    return settings.ttsEnabled !== false;
+
+function setVoiceGender(utterance) {
+    const selectedVoice = voiceSelect.value;
+    const hindiVoices = voices.filter(voice => voice.lang.startsWith('hi'));
+    
+    if (hindiVoices.length > 0) {
+        if (selectedVoice === 'female') {
+            utterance.voice = hindiVoices.find(v => v.name.toLowerCase().includes('female')) || hindiVoices[0];
+        } else if (selectedVoice === 'male') {
+            utterance.voice = hindiVoices.find(v => v.name.toLowerCase().includes('male')) || hindiVoices[0];
+        } else {
+            utterance.voice = hindiVoices[0];
+        }
+    }
 }
+
 function getSpeechSpeed() {
-    const settings = JSON.parse(localStorage.getItem('alfaSettings') || '{}');
-    switch(settings.speed) {
-        case 'slow': return 0.7;
-        case 'fast': return 1.3;
-        default: return 1.0;
-    }
+    return parseFloat(speedSelect.value) || 1.0;
 }
 
-// ================= SEND MESSAGE =================
-async function sendMessage() {
-    const message = messageInput.value.trim();
-    if (!message) return;
-
-    addMessage(message, 'user');
-    messageInput.value = '';
-    messageInput.style.height = 'auto';
-    scrollToBottom();
-
-    showTypingIndicator();
-
-    const response = await sendMessageToAPI(message);
-
-    removeTypingIndicator();
-    addMessage(response || "Dhanyavad! Aap kya janna chahte hain?", 'ai');
-
-    speakText(response);
+function isTTSEnabled() {
+    return ttsToggle.checked;
 }
 
-// ================= VOICE RECOGNITION =================
+// Speech Recognition
 const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 let recognition = null;
 let isListening = false;
+
 if (SpeechRecognition) {
     recognition = new SpeechRecognition();
     recognition.lang = 'hi-IN';
@@ -153,75 +83,181 @@ if (SpeechRecognition) {
         isListening = true;
         voiceBtn.classList.add('listening');
         voiceBtn.innerHTML = '<i class="fas fa-microphone-slash"></i>';
-        voiceBtn.title = "Listening...";
+        voiceBtn.title = "Listening... Click to stop";
+        messageInput.placeholder = "Listening... Speak now";
     };
-    recognition.onresult = e => {
-        const transcript = e.results[0][0].transcript;
+
+    recognition.onresult = (event) => {
+        const transcript = event.results[0][0].transcript;
         messageInput.value = transcript;
-        setTimeout(sendMessage, 300);
+        sendMessage();
     };
+
+    recognition.onerror = (event) => {
+        console.error('Speech recognition error:', event.error);
+        if (event.error === 'not-allowed') {
+            alert('Microphone permission denied. Please allow microphone access.');
+        }
+    };
+
     recognition.onend = () => {
         isListening = false;
         voiceBtn.classList.remove('listening');
         voiceBtn.innerHTML = '<i class="fas fa-microphone"></i>';
         voiceBtn.title = "Click to speak";
+        messageInput.placeholder = "Type your message...";
     };
 }
+
+// Voice Button Event
 voiceBtn.addEventListener('click', () => {
-    if (!SpeechRecognition) { alert('Voice not supported'); return; }
-    isListening ? recognition.stop() : recognition.start();
+    if (!SpeechRecognition) {
+        alert('Speech recognition is not supported in your browser. Try Chrome or Edge.');
+        return;
+    }
+    
+    if (isListening) {
+        recognition.stop();
+    } else {
+        try {
+            recognition.start();
+        } catch (error) {
+            console.error('Recognition start error:', error);
+        }
+    }
 });
 
-// ================= SETTINGS =================
-function loadSettings() {
-    const savedSettings = localStorage.getItem('alfaSettings');
-    if (savedSettings) {
-        const settings = JSON.parse(savedSettings);
-        voiceSelect.value = settings.voice || 'default';
-        speedSelect.value = settings.speed || 'normal';
-        themeSelect.value = settings.theme || 'dark';
-        document.body.classList.toggle('light-theme', settings.theme==='light');
-        themeToggle.innerHTML = settings.theme==='light' ? '<i class="fas fa-moon"></i>' : '<i class="fas fa-sun"></i>';
+// Send Message Function
+async function sendMessage() {
+    const message = messageInput.value.trim();
+    if (!message) return;
 
-        const ttsToggle = document.getElementById('ttsToggle');
-        if (ttsToggle) ttsToggle.checked = settings.ttsEnabled !== false;
+    addMessage('user', message);
+    messageInput.value = '';
+    
+    // Show typing indicator
+    const typingIndicator = addMessage('bot', 'Typing...', true);
+    
+    try {
+        const response = await fetch('/api/chat', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ message })
+        });
+
+        const data = await response.json();
+        
+        // Remove typing indicator
+        typingIndicator.remove();
+        
+        if (data.reply) {
+            const botMessage = addMessage('bot', data.reply);
+            speakText(data.reply);
+        } else {
+            addMessage('bot', '⚠️ Sorry, could not get response.');
+        }
+    } catch (error) {
+        typingIndicator.remove();
+        addMessage('bot', '⚠️ Error: ' + error.message);
     }
 }
-saveSettings.addEventListener('click', () => {
-    const ttsToggle = document.getElementById('ttsToggle');
-    const settings = {
-        voice: voiceSelect.value,
-        speed: speedSelect.value,
-        theme: themeSelect.value,
-        ttsEnabled: ttsToggle ? ttsToggle.checked : true
-    };
-    localStorage.setItem('alfaSettings', JSON.stringify(settings));
-    document.body.classList.toggle('light-theme', settings.theme==='light');
-    themeToggle.innerHTML = settings.theme==='light' ? '<i class="fas fa-moon"></i>' : '<i class="fas fa-sun"></i>';
-    settingsModal.style.display='none';
-});
-themeToggle.addEventListener('click', ()=>{
-    document.body.classList.toggle('light-theme');
-    const savedSettings = JSON.parse(localStorage.getItem('alfaSettings')||'{}');
-    savedSettings.theme = document.body.classList.contains('light-theme')?'light':'dark';
-    themeToggle.innerHTML = savedSettings.theme==='light'?'<i class="fas fa-moon"></i>':'<i class="fas fa-sun"></i>';
-    localStorage.setItem('alfaSettings', JSON.stringify(savedSettings));
-});
-settingsBtn.addEventListener('click',()=>settingsModal.style.display='flex');
-closeModal.addEventListener('click',()=>settingsModal.style.display='none');
-window.addEventListener('click',e=>{ if(e.target===settingsModal) settingsModal.style.display='none'; });
 
-// ================= NEW CHAT =================
-newChatBtn.addEventListener('click',()=>{
-    messagesContainer.innerHTML='';
-    addMessage("Namaste! Main Alfa AI hoon, Prakash Modi ji ka personal assistant.",'ai');
+// Add Message to Chat
+function addMessage(sender, text, isTyping = false) {
+    const messageDiv = document.createElement('div');
+    messageDiv.className = `message ${sender}-message ${isTyping ? 'typing' : ''}`;
+    
+    if (!isTyping) {
+        messageDiv.innerHTML = `
+            <div class="message-content">${formatMessage(text)}</div>
+            <div class="message-time">${getCurrentTime()}</div>
+        `;
+    } else {
+        messageDiv.innerHTML = `
+            <div class="message-content typing-indicator">
+                <span></span><span></span><span></span>
+            </div>
+        `;
+    }
+    
+    chatContainer.appendChild(messageDiv);
+    chatContainer.scrollTop = chatContainer.scrollHeight;
+    return messageDiv;
+}
+
+// Format Message Text
+function formatMessage(text) {
+    // Convert URLs to clickable links
+    text = text.replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank">$1</a>');
+    // Convert line breaks to <br>
+    text = text.replace(/\n/g, '<br>');
+    return text;
+}
+
+// Get Current Time
+function getCurrentTime() {
+    return new Date().toLocaleTimeString('en-IN', { 
+        hour: '2-digit', 
+        minute: '2-digit',
+        hour12: true 
+    });
+}
+
+// Event Listeners
+sendBtn.addEventListener('click', sendMessage);
+
+messageInput.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') {
+        sendMessage();
+    }
 });
 
-// ================= INITIALIZE =================
-window.addEventListener('DOMContentLoaded', () => {
-    loadSettings();
-    setTimeout(()=>{
-        if(messagesContainer.children.length===0)
-            addMessage("Namaste! Main Alfa AI hoon, Prakash Modi ji ka personal assistant.",'ai');
-    },1000);
+clearBtn.addEventListener('click', () => {
+    chatContainer.innerHTML = '';
+    // Add welcome message back
+    addMessage('bot', 'नमस्ते! मैं Alfa AI हूँ। आप कैसे मदद कर सकता हूँ?');
+});
+
+// Theme Toggle
+themeToggle.addEventListener('click', () => {
+    document.body.classList.toggle('dark-theme');
+    localStorage.setItem('theme', document.body.classList.contains('dark-theme') ? 'dark' : 'light');
+});
+
+// Load Saved Theme
+if (localStorage.getItem('theme') === 'dark') {
+    document.body.classList.add('dark-theme');
+}
+
+// Settings Change Events
+voiceSelect.addEventListener('change', () => {
+    localStorage.setItem('voicePreference', voiceSelect.value);
+});
+
+speedSelect.addEventListener('change', () => {
+    localStorage.setItem('speechSpeed', speedSelect.value);
+});
+
+ttsToggle.addEventListener('change', () => {
+    localStorage.setItem('ttsEnabled', ttsToggle.checked);
+});
+
+// Load Saved Settings
+if (localStorage.getItem('voicePreference')) {
+    voiceSelect.value = localStorage.getItem('voicePreference');
+}
+
+if (localStorage.getItem('speechSpeed')) {
+    speedSelect.value = localStorage.getItem('speechSpeed');
+}
+
+if (localStorage.getItem('ttsEnabled')) {
+    ttsToggle.checked = localStorage.getItem('ttsEnabled') === 'true';
+}
+
+// Initialize with welcome message
+window.addEventListener('load', () => {
+    addMessage('bot', 'नमस्ते! मैं Alfa AI हूँ। आप कैसे मदद कर सकता हूँ?');
 });
