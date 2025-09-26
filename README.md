@@ -1,2 +1,0 @@
-# Alfa-Ai
-Ai
