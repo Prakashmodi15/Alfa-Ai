@@ -4,7 +4,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { message } = req.body; // frontend से user का message ले रहे हैं
+    const { message } = req.body;
 
     if (!message) {
       return res.status(400).json({ error: "Message is required" });
@@ -17,7 +17,7 @@ export default async function handler(req, res) {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "openai/gpt-3.5-turbo", // आप चाहें तो कोई दूसरा मॉडल भी लगा सकते हैं
+        model: "openai/gpt-3.5-turbo",  // अपना पसंदीदा मॉडल डाल सकते हो
         messages: [
           { role: "system", content: "Aap ek helpful AI Assistant hain jiska naam Alfa AI hai." },
           { role: "user", content: message }
@@ -26,11 +26,9 @@ export default async function handler(req, res) {
     });
 
     const data = await response.json();
+    const reply = data.choices?.[0]?.message?.content || "⚠️ Maaf kijiye, koi reply nahi mila.";
 
-    const reply = data.choices?.[0]?.message?.content || "Maaf kijiye, koi reply nahi mila.";
-
-    return res.status(200).json({ reply });
-
+    return res.status(200).json({ reply }); // ✅ Frontend reply key से ही पढ़ेगा
   } catch (error) {
     return res.status(500).json({ error: error.message });
   }
