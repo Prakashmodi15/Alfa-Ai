@@ -1,4 +1,5 @@
-import fetch from 'node-fetch';
+// /api/chat.js
+import fetch from 'node-fetch'; // Agar Node 18+ hai, ye line hata sakte ho
 
 export default function handler(req, res) {
     if (req.method !== 'POST') return res.status(405).json({ response: "Method not allowed" });
@@ -8,8 +9,6 @@ export default function handler(req, res) {
 
     (async () => {
         try {
-            console.log("Sending message:", message);
-
             const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
                 method: 'POST',
                 headers: {
@@ -22,10 +21,7 @@ export default function handler(req, res) {
                 })
             });
 
-            console.log("API Status:", response.status);
             const data = await response.json();
-            console.log("API Response:", data);
-
             const aiResponse = data?.choices?.[0]?.message?.content || "⚠️ AI se response nahi aaya";
             res.status(200).json({ response: aiResponse });
 
