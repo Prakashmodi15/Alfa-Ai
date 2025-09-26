@@ -10,7 +10,7 @@ async function sendMessageToAPI(message) {
         return data.reply;
     } catch (error) {
         console.error("Error:", error);
-        return "⚠️ Error: Server se connect nahi ho pa raha.";
+        return "⚠️ Server se connect nahi ho pa raha.";
     }
 }
 
@@ -42,24 +42,6 @@ messageInput.addEventListener('input', function() {
     this.style.height = (this.scrollHeight) + 'px';
 });
 
-// ================= SEND MESSAGE =================
-async function sendMessage() {
-    const message = messageInput.value.trim();
-    if (!message) return;
-
-    addMessage(message, 'user');
-    messageInput.value = '';
-    messageInput.style.height = 'auto';
-    scrollToBottom();
-
-    showTypingIndicator();
-
-    const response = await sendMessageToAPI(message);
-
-    removeTypingIndicator();
-    addMessage(response || "Dhanyavad! Aap kya janna chahte hain?", 'ai');
-}
-
 // ================= ADD MESSAGE TO UI =================
 function addMessage(content, sender) {
     const messageDiv = document.createElement('div');
@@ -67,7 +49,7 @@ function addMessage(content, sender) {
 
     const avatar = document.createElement('div');
     avatar.classList.add('message-avatar');
-    avatar.textContent = sender === 'ai' ? 'AI' : 'U';
+    avatar.textContent = sender === 'ai' ? 'α' : 'U';
     messageDiv.appendChild(avatar);
 
     const messageContent = document.createElement('div');
@@ -107,11 +89,55 @@ function scrollToBottom() {
     messagesContainer.scrollTop = messagesContainer.scrollHeight;
 }
 
-// ================= EVENT LISTENERS =================
-sendButton.addEventListener('click', sendMessage);
-messageInput.addEventListener('keydown', e => {
-    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
-});
+// ================= TEXT-TO-SPEECH =================
+function speakText(text) {
+    if ('speechSynthesis' in window && isTTSEnabled()) {
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = 'hi-IN';
+        utterance.rate = getSpeechSpeed();
+
+        const voices = speechSynthesis.getVoices();
+        if (voiceSelect.value === 'female') {
+            utterance.voice = voices.find(v => v.lang.startsWith('hi') && v.name.toLowerCase().includes('female')) || voices[0];
+        } else if (voiceSelect.value === 'male') {
+            utterance.voice = voices.find(v => v.lang.startsWith('hi') && v.name.toLowerCase().includes('male')) || voices[0];
+        }
+
+        speechSynthesis.speak(utterance);
+    }
+}
+function isTTSEnabled() {
+    const settings = JSON.parse(localStorage.getItem('alfaSettings') || '{}');
+    return settings.ttsEnabled !== false;
+}
+function getSpeechSpeed() {
+    const settings = JSON.parse(localStorage.getItem('alfaSettings') || '{}');
+    switch(settings.speed) {
+        case 'slow': return 0.7;
+        case 'fast': return 1.3;
+        default: return 1.0;
+    }
+}
+
+// ================= SEND MESSAGE =================
+async function sendMessage() {
+    const message = messageInput.value.trim();
+    if (!message) return;
+
+    addMessage(message, 'user');
+    messageInput.value = '';
+    messageInput.style.height = 'auto';
+    scrollToBottom();
+
+    showTypingIndicator();
+
+    const response = await sendMessageToAPI(message);
+
+    removeTypingIndicator();
+    addMessage(response || "Dhanyavad! Aap kya janna chahte hain?", 'ai');
+
+    speakText(response);
+}
 
 // ================= VOICE RECOGNITION =================
 const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -120,11 +146,31 @@ let isListening = false;
 if (SpeechRecognition) {
     recognition = new SpeechRecognition();
     recognition.lang = 'hi-IN';
-    recognition.onstart = () => { isListening = true; voiceBtn.classList.add('listening'); voiceBtn.innerHTML='<i class="fas fa-microphone-slash"></i>'; };
-    recognition.onresult = e => { messageInput.value = e.results[0][0].transcript; sendMessage(); };
-    recognition.onend = () => { isListening=false; voiceBtn.classList.remove('listening'); voiceBtn.innerHTML='<i class="fas fa-microphone"></i>'; };
+    recognition.continuous = false;
+    recognition.interimResults = false;
+
+    recognition.onstart = () => {
+        isListening = true;
+        voiceBtn.classList.add('listening');
+        voiceBtn.innerHTML = '<i class="fas fa-microphone-slash"></i>';
+        voiceBtn.title = "Listening...";
+    };
+    recognition.onresult = e => {
+        const transcript = e.results[0][0].transcript;
+        messageInput.value = transcript;
+        setTimeout(sendMessage, 300);
+    };
+    recognition.onend = () => {
+        isListening = false;
+        voiceBtn.classList.remove('listening');
+        voiceBtn.innerHTML = '<i class="fas fa-microphone"></i>';
+        voiceBtn.title = "Click to speak";
+    };
 }
-voiceBtn.addEventListener('click', () => { if (!SpeechRecognition){ alert('Voice not supported'); return; } isListening ? recognition.stop() : recognition.start(); });
+voiceBtn.addEventListener('click', () => {
+    if (!SpeechRecognition) { alert('Voice not supported'); return; }
+    isListening ? recognition.stop() : recognition.start();
+});
 
 // ================= SETTINGS =================
 function loadSettings() {
@@ -136,19 +182,28 @@ function loadSettings() {
         themeSelect.value = settings.theme || 'dark';
         document.body.classList.toggle('light-theme', settings.theme==='light');
         themeToggle.innerHTML = settings.theme==='light' ? '<i class="fas fa-moon"></i>' : '<i class="fas fa-sun"></i>';
+
+        const ttsToggle = document.getElementById('ttsToggle');
+        if (ttsToggle) ttsToggle.checked = settings.ttsEnabled !== false;
     }
 }
 saveSettings.addEventListener('click', () => {
-    const settings = {voice: voiceSelect.value, speed: speedSelect.value, theme: themeSelect.value};
+    const ttsToggle = document.getElementById('ttsToggle');
+    const settings = {
+        voice: voiceSelect.value,
+        speed: speedSelect.value,
+        theme: themeSelect.value,
+        ttsEnabled: ttsToggle ? ttsToggle.checked : true
+    };
     localStorage.setItem('alfaSettings', JSON.stringify(settings));
     document.body.classList.toggle('light-theme', settings.theme==='light');
     themeToggle.innerHTML = settings.theme==='light' ? '<i class="fas fa-moon"></i>' : '<i class="fas fa-sun"></i>';
     settingsModal.style.display='none';
 });
-themeToggle.addEventListener('click', () => {
+themeToggle.addEventListener('click', ()=>{
     document.body.classList.toggle('light-theme');
     const savedSettings = JSON.parse(localStorage.getItem('alfaSettings')||'{}');
-    savedSettings.theme = document.body.classList.contains('light-theme') ? 'light' : 'dark';
+    savedSettings.theme = document.body.classList.contains('light-theme')?'light':'dark';
     themeToggle.innerHTML = savedSettings.theme==='light'?'<i class="fas fa-moon"></i>':'<i class="fas fa-sun"></i>';
     localStorage.setItem('alfaSettings', JSON.stringify(savedSettings));
 });
@@ -157,10 +212,16 @@ closeModal.addEventListener('click',()=>settingsModal.style.display='none');
 window.addEventListener('click',e=>{ if(e.target===settingsModal) settingsModal.style.display='none'; });
 
 // ================= NEW CHAT =================
-newChatBtn.addEventListener('click',()=>{ messagesContainer.innerHTML=''; addMessage("Namaste! Main Alfa AI hoon, Prakash Modi ji ka personal assistant.",'ai'); });
+newChatBtn.addEventListener('click',()=>{
+    messagesContainer.innerHTML='';
+    addMessage("Namaste! Main Alfa AI hoon, Prakash Modi ji ka personal assistant.",'ai');
+});
 
 // ================= INITIALIZE =================
 window.addEventListener('DOMContentLoaded', () => {
     loadSettings();
-    setTimeout(()=>{ if(messagesContainer.children.length===0) addMessage("Namaste! Main Alfa AI hoon, Prakash Modi ji ka personal assistant.",'ai'); },1000);
+    setTimeout(()=>{
+        if(messagesContainer.children.length===0)
+            addMessage("Namaste! Main Alfa AI hoon, Prakash Modi ji ka personal assistant.",'ai');
+    },1000);
 });
