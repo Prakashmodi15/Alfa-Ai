@@ -1,33 +1,25 @@
-// /api/chat.js
-import fetch from 'node-fetch'; // Agar Node 18+ hai, ye line hata sakte ho
+export default async function handler(req, res) {
+  if (req.method !== "POST") {
+    return res.status(405).json({ error: "Only POST allowed" });
+  }
 
-export default function handler(req, res) {
-    if (req.method !== 'POST') return res.status(405).json({ response: "Method not allowed" });
+  try {
+    const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${process.env.OPENROUTER_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: "openai/gpt-3.5-turbo",  // यहां अपना model डालना
+        messages: [{ role: "user", content: "Hello from Vercel!" }],
+      }),
+    });
 
-    const { message } = req.body;
-    if (!message) return res.status(400).json({ response: "⚠️ Message missing" });
+    const data = await response.json();
+    return res.status(200).json(data);
 
-    (async () => {
-        try {
-            const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${process.env.OPENROUTER_API_KEY}`,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    model: 'deepseek/deepseek-chat-v3.1:free',
-                    messages: [{ role: 'user', content: message }]
-                })
-            });
-
-            const data = await response.json();
-            const aiResponse = data?.choices?.[0]?.message?.content || "⚠️ AI se response nahi aaya";
-            res.status(200).json({ response: aiResponse });
-
-        } catch (error) {
-            console.error('Error:', error);
-            res.status(500).json({ response: "⚠️ Error: Server se connect nahi ho pa raha" });
-        }
-    })();
+  } catch (error) {
+    return res.status(500).json({ error: error.message });
+  }
 }
