@@ -22,14 +22,15 @@ export default function handler(req, res) {
                 })
             });
 
+            console.log("API Status:", response.status);
             const data = await response.json();
-            console.log("OpenRouter response:", data);
+            console.log("API Response:", data);
 
             const aiResponse = data?.choices?.[0]?.message?.content || "⚠️ AI se response nahi aaya";
             res.status(200).json({ response: aiResponse });
 
-        } catch (err) {
-            console.error("Error connecting to OpenRouter:", err);
+        } catch (error) {
+            console.error('Error:', error);
             res.status(500).json({ response: "⚠️ Error: Server se connect nahi ho pa raha" });
         }
     })();
