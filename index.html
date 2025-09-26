@@ -1,113 +1,95 @@
 <!DOCTYPE html>
-<html lang="hi">
+<html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Alfa AI - Prakash Modi ka Personal Assistant</title>
-  <link rel="stylesheet" href="style.css">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alfa AI - Personal Assistant</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div class="container">
+    <!-- Sidebar Toggle Button (Mobile Only) -->
+    <button class="menu-toggle" id="menuToggle">☰</button>
+
     <!-- Sidebar -->
-    <div class="sidebar">
-      <div class="logo">
-        <img src="logo.png" alt="Alfa AI Logo" class="logo-img">
-        <div class="logo-text">Alfa AI</div>
-      </div>
-      
-      <button class="new-chat-btn" id="newChatBtn">
-        <i class="fas fa-plus"></i>
-        <span>New Chat</span>
-      </button>
-      
-      <div class="history-list" id="historyList">
-        <!-- चैट हिस्ट्री JS से add होगी -->
-      </div>
-      
-      <div class="settings">
-        <div class="settings-btn" id="settingsBtn">
-          <i class="fas fa-cog"></i>
-          <span>Settings</span>
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="logo">
+                <span class="logo-icon">α</span>
+                <span class="logo-text">Alfa AI</span>
+            </div>
+            <div class="creator">by Prakash Modi</div>
         </div>
-      </div>
+        
+        <button class="new-chat-btn" id="newChatBtn">
+            <span>+</span> New Chat
+        </button>
+        
+        <div class="chat-history" id="chatHistory">
+            <div class="history-title">Recent Chats</div>
+            <div class="chat-item">How to learn JavaScript effectively?</div>
+            <div class="chat-item">Explain quantum computing</div>
+            <div class="chat-item">Write a poem about autumn</div>
+            <div class="chat-item">Best practices for React development</div>
+            <div class="chat-item">Python vs JavaScript for web development</div>
+        </div>
+        
+        <div class="sidebar-footer">
+            <p>Alfa AI Personal Assistant</p>
+            <p>Created by Prakash Modi</p>
+        </div>
     </div>
-    
+
     <!-- Main Chat Area -->
     <div class="chat-container">
-      <div class="chat-header">
-        <div class="chat-title">Alfa AI Assistant</div>
-        <div class="chat-actions">
-          <button class="chat-action-btn" id="fullscreenBtn"><i class="fas fa-expand"></i></button>
-          <button class="chat-action-btn" id="themeToggle"><i class="fas fa-sun"></i></button>
+        <div class="chat-header">
+            <div class="chat-title">
+                <span class="ai-icon">α</span>
+                <span>Alfa AI Assistant</span>
+            </div>
+            <div class="chat-subtitle">Your personal AI by Prakash Modi</div>
         </div>
-      </div>
-      
-      <div class="messages-container" id="messagesContainer">
-        <!-- Messages JS से load होंगे -->
-        <div class="welcome-screen" id="welcomeScreen">
-          <img src="logo.png" alt="Alfa AI Logo" class="welcome-logo">
-          <h1 class="welcome-title">Alfa AI - Prakash Modi ka Assistant</h1>
-          <p class="welcome-subtitle">
-            Main aapka personal AI assistant hoon.  
-            Aap mujhse kuch bhi pooch sakte hain – programming help, real-time news, weather, ya general knowledge questions.
-          </p>
+        
+        <div class="messages-container" id="messagesContainer">
+            <div class="message ai-message">
+                <div class="message-avatar">α</div>
+                <div class="message-content">
+                    <div class="message-sender">Alfa AI</div>
+                    Hello! I'm Alfa AI, your personal assistant created by Prakash Modi. How can I help you today?
+                </div>
+            </div>
+            
+            <div class="message user-message">
+                <div class="message-content">
+                    <div class="message-sender">You</div>
+                    Can you explain what machine learning is?
+                </div>
+                <div class="message-avatar">U</div>
+            </div>
+            
+            <div class="message ai-message">
+                <div class="message-avatar">α</div>
+                <div class="message-content">
+                    <div class="message-sender">Alfa AI</div>
+                    Machine learning is a subset of artificial intelligence that focuses on building systems that can learn from data and improve their performance over time without being explicitly programmed for every task. Instead of following rigid instructions, these systems use algorithms to identify patterns in data and make predictions or decisions.
+                </div>
+            </div>
         </div>
-      </div>
-      
-      <div class="input-container">
-        <div class="input-box">
-          <textarea class="text-input" id="textInput" placeholder="Type your message here... (Ctrl+Enter to send)" rows="1"></textarea>
-          <div class="input-actions">
-            <button class="input-btn" id="voiceBtn" title="Voice Input">
-              <i class="fas fa-microphone"></i>
-            </button>
-            <button class="input-btn send-btn" id="sendBtn" title="Send Message">
-              <i class="fas fa-paper-plane"></i>
-            </button>
-          </div>
+        
+        <div class="input-container">
+            <div class="input-box">
+                <textarea id="messageInput" placeholder="Message Alfa AI..." rows="1"></textarea>
+                <button class="send-btn" id="sendButton">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                        <path d="M7 11L12 6L17 11M12 18V7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="input-footer">
+                <span>Alfa AI can make mistakes. Consider checking important information.</span>
+            </div>
         </div>
-      </div>
     </div>
-  </div>
 
-  <!-- Settings Modal -->
-  <div class="modal" id="settingsModal">
-    <div class="modal-content">
-      <div class="modal-header">
-        <div class="modal-title">Alfa AI Settings</div>
-        <button class="close-modal" id="closeModal">&times;</button>
-      </div>
-      <div class="setting-option">
-        <label class="setting-label">Voice Selection</label>
-        <select class="setting-select" id="voiceSelect">
-          <option value="default">Default Voice</option>
-          <option value="male">Male Voice</option>
-          <option value="female">Female Voice</option>
-          <option value="child">Child Voice</option>
-        </select>
-      </div>
-      <div class="setting-option">
-        <label class="setting-label">Response Speed</label>
-        <select class="setting-select" id="speedSelect">
-          <option value="fast">Fast</option>
-          <option value="normal" selected>Normal</option>
-          <option value="slow">Slow</option>
-        </select>
-      </div>
-      <div class="setting-option">
-        <label class="setting-label">Theme</label>
-        <select class="setting-select" id="themeSelect">
-          <option value="dark" selected>Dark</option>
-          <option value="light">Light</option>
-          <option value="auto">Auto</option>
-        </select>
-      </div>
-      <button class="save-settings" id="saveSettings">Save Settings</button>
-    </div>
-  </div>
-
-  <!-- JS File -->
-  <script src="chat.js"></script>
+    <script src="chat.js"></script>
 </body>
 </html>
