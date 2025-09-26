@@ -7,7 +7,7 @@ async function sendMessageToAPI(message) {
             body: JSON.stringify({ message })
         });
         const data = await response.json();
-        return data.response;
+        return data.reply; // ✅ Backend ka "reply" key use ho raha hai
     } catch (error) {
         console.error("Error:", error);
         return "⚠️ Error: Server se connect nahi ho pa raha.";
@@ -83,7 +83,7 @@ function addMessage(content, sender) {
     messageDiv.appendChild(messageTime);
     
     messagesContainer.appendChild(messageDiv);
-    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    scrollToBottom();
 }
 
 // ================= TYPING INDICATOR =================
