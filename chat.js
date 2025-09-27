@@ -64,6 +64,42 @@ function speakText(text) {
     }
 }
 
+// ================= WEATHER FUNCTION =================
+async function getWeather(city) {
+    const apiKey = "360de8cc933ebf77fa9c3a82db4fd652"; // OpenWeatherMap key
+    try {
+        const response = await fetch(`https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${apiKey}&units=metric`);
+        const data = await response.json();
+        if (data.cod === 200) {
+            const temp = data.main.temp;
+            const desc = data.weather[0].description;
+            addMessage(`🌤 ${city} ka current temperature: ${temp}°C, Weather: ${desc}`, 'ai');
+            speakText(`${city} ka current temperature ${temp} degree Celsius hai aur mausam ${desc} hai`);
+        } else {
+            addMessage(`⚠️ ${city} ka weather nahi mila.`, 'ai');
+        }
+    } catch (error) {
+        addMessage("⚠️ Weather fetch karne me error.", 'ai');
+    }
+}
+
+// ================= NEWS FUNCTION =================
+async function getNews(city) {
+    const apiKey = "3d53de59cab643418e1568d72fcbce4e"; // NewsAPI key
+    try {
+        const response = await fetch(`https://newsapi.org/v2/top-headlines?country=in&q=${city}&apiKey=${apiKey}`);
+        const data = await response.json();
+        if (data.articles.length > 0) {
+            addMessage(`📰 ${city} ki latest news: ${data.articles[0].title}`, 'ai');
+            speakText(`${city} ki latest news: ${data.articles[0].title}`);
+        } else {
+            addMessage(`⚠️ ${city} ki latest news nahi mili.`, 'ai');
+        }
+    } catch (error) {
+        addMessage("⚠️ News fetch karne me error.", 'ai');
+    }
+}
+
 // ================= SEND MESSAGE =================
 async function sendMessage() {
     const message = messageInput.value.trim();
@@ -80,12 +116,22 @@ async function sendMessage() {
     messagesContainer.appendChild(typingDiv);
     scrollToBottom();
 
-    const response = await sendMessageToAPI(message);
-
-    document.getElementById('typingIndicator').remove();
-
-    addMessage(response || "Dhanyavad! Aap kya janna chahte hain?", 'ai');
-    speakText(response);
+    // Check for weather or news keywords
+    const lowerMsg = message.toLowerCase();
+    if (lowerMsg.includes("weather")) {
+        const city = message.split("in")[1]?.trim() || "Raniwara";
+        document.getElementById('typingIndicator').remove();
+        getWeather(city);
+    } else if (lowerMsg.includes("news")) {
+        const city = message.split("in")[1]?.trim() || "India";
+        document.getElementById('typingIndicator').remove();
+        getNews(city);
+    } else {
+        const response = await sendMessageToAPI(message);
+        document.getElementById('typingIndicator').remove();
+        addMessage(response || "Dhanyavad! Aap kya janna chahte hain?", 'ai');
+        speakText(response);
+    }
 }
 
 // ================= SEND BUTTON =================
