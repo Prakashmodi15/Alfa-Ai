@@ -1,5 +1,7 @@
+// /api/chat.js
 import admin from "firebase-admin";
 
+// Initialize Firebase Admin SDK
 if (!admin.apps.length) {
   admin.initializeApp({
     credential: admin.credential.cert({
@@ -13,12 +15,15 @@ if (!admin.apps.length) {
 
 const db = admin.firestore();
 
+// Vercel API Handler
 export default async function handler(req, res) {
-  if (req.method !== "POST") return res.status(405).json({ error: "Only POST allowed" });
+  if (req.method !== "POST") 
+    return res.status(405).json({ error: "Only POST allowed" });
 
   try {
     const { message } = req.body;
-    if (!message) return res.status(400).json({ error: "Message is required" });
+    if (!message) 
+      return res.status(400).json({ error: "Message is required" });
 
     // OpenRouter API call
     const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
@@ -39,7 +44,7 @@ export default async function handler(req, res) {
     const data = await response.json();
     const reply = data.choices?.[0]?.message?.content || "⚠️ Maaf kijiye, koi reply nahi mila.";
 
-    // Firebase me save
+    // Firebase Firestore me save karo
     await db.collection("messages").add({
       userMessage: message,
       aiReply: reply,
