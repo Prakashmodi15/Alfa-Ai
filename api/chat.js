@@ -1,7 +1,7 @@
 // /api/chat.js
 import admin from "firebase-admin";
 
-// Firebase Admin Initialization (use Vercel env variables)
+// Firebase Admin Initialization using Vercel environment variables
 if (!admin.apps.length) {
   try {
     admin.initializeApp({
