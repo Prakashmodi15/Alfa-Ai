@@ -1,3 +1,20 @@
+// ================= FIREBASE INIT =================
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-app.js";
+import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyDkjMBr4O19DFMTADqwwIE16LF7sY0A1cw",
+  authDomain: "alfa-ai-2771b.firebaseapp.com",
+  projectId: "alfa-ai-2771b",
+  storageBucket: "alfa-ai-2771b.firebasestorage.app",
+  messagingSenderId: "370421408783",
+  appId: "1:370421408783:web:3c0a1094ad91739ca2ef7a",
+  measurementId: "G-5FWBKKL482"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
 // ================= API CALL FUNCTION =================
 async function sendMessageToAPI(message) {
     try {
@@ -11,6 +28,19 @@ async function sendMessageToAPI(message) {
     } catch (error) {
         console.error("Error:", error);
         return "⚠️ Server se connect nahi ho pa raha.";
+    }
+}
+
+// ================= SAVE TO FIREBASE =================
+async function saveMessageToFirebase(userMessage, aiReply) {
+    try {
+        await addDoc(collection(db, "messages"), {
+            userMessage,
+            aiReply,
+            timestamp: serverTimestamp()
+        });
+    } catch (err) {
+        console.error("Firebase save error:", err);
     }
 }
 
@@ -85,6 +115,10 @@ async function sendMessage() {
     document.getElementById('typingIndicator').remove();
 
     addMessage(response || "Dhanyavad! Aap kya janna chahte hain?", 'ai');
+
+    // Firebase me save karo
+    saveMessageToFirebase(message, response);
+
     speakText(response);
 }
 
@@ -138,5 +172,5 @@ newChatBtn.addEventListener('click', () => {
 
 // ================= INITIALIZE =================
 window.addEventListener('DOMContentLoaded', () => {
-    addMessage("Namaste! Main Alfa AI hoon, Prakash Modi ji ka personal assistant.", 'ai');
+    addMessage("Namaste! Main Alfa AI hoon, Prakash Modi ka personal assistant.", 'ai');
 });
