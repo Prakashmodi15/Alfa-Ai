@@ -24,9 +24,35 @@ const voiceBtn = document.getElementById('voiceBtn');
 const newChatBtn = document.getElementById('newChatBtn');
 const voiceLogo = document.getElementById('voiceLogo');
 
-// ================= SIDEBAR TOGGLE =================
+// Sidebar toggle
+const menuToggle = document.getElementById('menuToggle');
+const sidebar = document.getElementById('sidebar');
+
 menuToggle.addEventListener('click', () => {
-    sidebar.classList.toggle('open');
+    sidebar.classList.toggle('sidebar-open');
+});
+
+// New Chat button
+const newChatBtn = document.getElementById('newChatBtn');
+const chatHistory = document.getElementById('chatHistory');
+
+newChatBtn.addEventListener('click', () => {
+    const newChatDiv = document.createElement('div');
+    newChatDiv.classList.add('chat-item');
+    newChatDiv.textContent = `New Chat ${chatHistory.children.length}`;
+    chatHistory.appendChild(newChatDiv);
+
+    // Optionally, scroll to bottom
+    chatHistory.scrollTop = chatHistory.scrollHeight;
+});
+
+// Optional: Click on chat history item to open chat
+chatHistory.addEventListener('click', (e) => {
+    if(e.target.classList.contains('chat-item')){
+        alert(`Opening ${e.target.textContent}`);
+        // Yaha aap main chat area ko update kar sakte ho
+    }
+});
 });
 
 // ================= SCROLL TO BOTTOM =================
