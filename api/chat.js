@@ -1,5 +1,6 @@
 // /api/chat.js
 import fetch from "node-fetch";
+import { saveMessage } from "./data.js"; // Firebase helper import
 
 export default async function handler(req, res) {
   if (req.method !== "POST") {
@@ -7,7 +8,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { message } = req.body;
+    const { message, user = "guest" } = req.body;
     if (!message) return res.status(400).json({ error: "Message is required" });
 
     let userMsg = message.toLowerCase();
@@ -15,7 +16,6 @@ export default async function handler(req, res) {
 
     // ===== WEATHER HANDLER =====
     if (userMsg.includes("weather") || userMsg.includes("tapman")) {
-      // Extract city name using regex (simple)
       const cityMatch = message.match(/in ([a-zA-Z\s]+)/i) || message.match(/ka weather ([a-zA-Z\s]+)/i);
       let city = cityMatch ? cityMatch[1].trim() : "";
 
@@ -23,7 +23,6 @@ export default async function handler(req, res) {
         reply = "Kripya city ka naam batayein jaha ka weather aapko chahiye.";
       } else {
         try {
-          // Open-Meteo Geo Coding
           const geoRes = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(city)}&count=1`);
           const geoData = await geoRes.json();
 
@@ -86,6 +85,13 @@ export default async function handler(req, res) {
 
       const gptData = await gptRes.json();
       reply = gptData.choices?.[0].message?.content || "⚠️ Koi reply nahi mila.";
+    }
+
+    // ===== FIREBASE SAVE =====
+    try {
+      await saveMessage(user, message, reply);
+    } catch (dbErr) {
+      console.error("🔥 Firestore Save Error:", dbErr);
     }
 
     return res.status(200).json({ reply });
