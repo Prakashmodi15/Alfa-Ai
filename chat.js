@@ -100,7 +100,6 @@ async function sendMessage() {
     messageInput.value = '';
     messagesContainer.scrollTop = messagesContainer.scrollHeight;
 
-    // Show typing indicator
     const typingDiv = document.createElement('div');
     typingDiv.textContent = 'Alfa AI typing...';
     typingDiv.id = 'typingIndicator';
@@ -170,6 +169,8 @@ voiceBtn.addEventListener('click', () => {
 newChatBtn.addEventListener('click', () => {
     messagesContainer.innerHTML = '';
     addMessage("Namaste! Main Alfa AI hoon, Prakash Modi ka personal assistant.", 'ai');
+
+    // Sidebar me new chat add, history safe rahe
     const newChatDiv = document.createElement('div');
     newChatDiv.classList.add('chat-item');
     newChatDiv.textContent = `New Chat ${chatHistory.children.length + 1}`;
@@ -184,7 +185,15 @@ async function loadChatHistory() {
         const data = await res.json();
 
         if (data.messages && data.messages.length > 0) {
-            chatHistory.innerHTML = `<div class="history-title">Chat History</div>`;
+            // Sirf title add agar already nahi hai
+            if (!chatHistory.querySelector('.history-title')) {
+                const titleDiv = document.createElement('div');
+                titleDiv.classList.add('history-title');
+                titleDiv.textContent = "Chat History";
+                chatHistory.appendChild(titleDiv);
+            }
+
+            // Messages append karte raho, delete nahi hoga
             data.messages.forEach(msg => {
                 const chatItem = document.createElement("div");
                 chatItem.classList.add("chat-item");
@@ -200,10 +209,7 @@ async function loadChatHistory() {
 
 function loadMessageToChat(msg) {
     messagesContainer.innerHTML = '';
-
-    // User
     addMessage(msg.message, 'user');
-    // AI
     addMessage(msg.reply, 'ai');
 }
 
