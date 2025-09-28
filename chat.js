@@ -1,10 +1,10 @@
 // ================= API CALL FUNCTION =================
-async function sendMessageToAPI(message) {
+async function sendMessageToAPI(message, user = "guest") {
     try {
         const response = await fetch("/api/chat", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ message })
+            body: JSON.stringify({ message, user })
         });
         const data = await response.json();
         return data.reply;
@@ -106,21 +106,32 @@ async function sendMessage() {
     messagesContainer.appendChild(typingDiv);
     messagesContainer.scrollTop = messagesContainer.scrollHeight;
 
+    let reply = "";
     const lowerMsg = message.toLowerCase();
+
     if (lowerMsg.includes("weather")) {
         const city = message.split("in")[1]?.trim() || "Raniwara";
         typingDiv.remove();
-        getWeather(city);
+        await getWeather(city);
     } else if (lowerMsg.includes("news")) {
         const city = message.split("in")[1]?.trim() || "India";
         typingDiv.remove();
-        getNews(city);
+        await getNews(city);
     } else {
-        const response = await sendMessageToAPI(message);
+        // ✅ OpenRouter call + Firestore save handled in /api/chat
+        reply = await sendMessageToAPI(message, "guest");
         typingDiv.remove();
-        addMessage(response || "Dhanyavad! Aap kya janna chahte hain?", 'ai');
-        speakText(response);
+        addMessage(reply || "Dhanyavad! Aap kya janna chahte hain?", 'ai');
+        speakText(reply);
     }
+
+    // Sidebar me update kare bina history delete kiye
+    const chatItem = document.createElement("div");
+    chatItem.classList.add("chat-item");
+    chatItem.textContent = `guest: ${message}`;
+    chatItem.addEventListener("click", () => loadMessageToChat({ user: "guest", message, reply }));
+    chatHistory.appendChild(chatItem);
+    chatHistory.scrollTop = chatHistory.scrollHeight;
 }
 
 // ================= SEND BUTTON =================
@@ -170,7 +181,6 @@ newChatBtn.addEventListener('click', () => {
     messagesContainer.innerHTML = '';
     addMessage("Namaste! Main Alfa AI hoon, Prakash Modi ka personal assistant.", 'ai');
 
-    // Sidebar me new chat add, history safe rahe
     const newChatDiv = document.createElement('div');
     newChatDiv.classList.add('chat-item');
     newChatDiv.textContent = `New Chat ${chatHistory.children.length + 1}`;
@@ -185,7 +195,7 @@ async function loadChatHistory() {
         const data = await res.json();
 
         if (data.messages && data.messages.length > 0) {
-            // Sirf title add agar already nahi hai
+            // Title only once
             if (!chatHistory.querySelector('.history-title')) {
                 const titleDiv = document.createElement('div');
                 titleDiv.classList.add('history-title');
@@ -193,7 +203,6 @@ async function loadChatHistory() {
                 chatHistory.appendChild(titleDiv);
             }
 
-            // Messages append karte raho, delete nahi hoga
             data.messages.forEach(msg => {
                 const chatItem = document.createElement("div");
                 chatItem.classList.add("chat-item");
