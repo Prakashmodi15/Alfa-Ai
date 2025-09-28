@@ -24,12 +24,66 @@ const voiceBtn = document.getElementById('voiceBtn');
 const newChatBtn = document.getElementById('newChatBtn');
 const voiceLogo = document.getElementById('voiceLogo');
 
-// Sidebar toggle
-const menuToggle = document.getElementById('menuToggle');
-const sidebar = document.getElementById('sidebar');
+async function loadChatHistory() {
+  const historyContainer = document.getElementById("chatHistory");
 
-menuToggle.addEventListener('click', () => {
-    sidebar.classList.toggle('sidebar-open');
+  try {
+    const res = await fetch("/api/getMessages");
+    const data = await res.json();
+
+    if (data.messages && data.messages.length > 0) {
+      // Clear existing messages
+      historyContainer.innerHTML = `<div class="history-title">Chat History</div>`;
+
+      data.messages.forEach(msg => {
+        const chatItem = document.createElement("div");
+        chatItem.classList.add("chat-item");
+        chatItem.textContent = `${msg.user}: ${msg.message}`;
+        
+        // Click to load in main chat
+        chatItem.addEventListener("click", () => {
+          loadMessageToChat(msg);
+        });
+
+        historyContainer.appendChild(chatItem);
+      });
+    }
+  } catch (err) {
+    console.error("Error loading chat history:", err);
+  }
+}
+
+// Load a single message into chat container
+function loadMessageToChat(msg) {
+  const messagesContainer = document.querySelector(".messages-container");
+
+  // Clear current chat
+  messagesContainer.innerHTML = "";
+
+  // User message
+  const userDiv = document.createElement("div");
+  userDiv.classList.add("message", "user-message");
+  userDiv.innerHTML = `
+    <div class="message-content">${msg.message}</div>
+    <div class="message-avatar">U</div>
+  `;
+  messagesContainer.appendChild(userDiv);
+
+  // AI reply
+  const aiDiv = document.createElement("div");
+  aiDiv.classList.add("message", "ai-message");
+  aiDiv.innerHTML = `
+    <div class="message-avatar">A</div>
+    <div class="message-content">${msg.reply}</div>
+  `;
+  messagesContainer.appendChild(aiDiv);
+
+  // Scroll to bottom
+  messagesContainer.scrollTop = messagesContainer.scrollHeight;
+}
+
+// Call on page load
+window.addEventListener("DOMContentLoaded", loadChatHistory);
 });
 
 // New Chat button
@@ -54,12 +108,6 @@ chatHistory.addEventListener('click', (e) => {
     }
 });
 });
-
-// ================= SCROLL TO BOTTOM =================
-function scrollToBottom() {
-    messagesContainer.scrollTop = messagesContainer.scrollHeight;
-}
-
 // ================= ADD MESSAGE =================
 function addMessage(content, sender) {
     const msg = document.createElement('div');
