@@ -1,6 +1,24 @@
 // /api/chat.js
 import fetch from "node-fetch";
-import { saveMessage } from "./data.js"; // Firebase helper import
+import { createClient } from "@supabase/supabase-js";
+
+// ===== Supabase Setup =====
+const supabaseUrl = process.env.SUPABASE_URL; // Vercel env variable
+const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY; // Backend-only key
+const supabase = createClient(supabaseUrl, supabaseKey);
+
+// ===== Helper: Save Message to Supabase =====
+async function saveMessage(user, userMessage, replyMessage) {
+  try {
+    const { data, error } = await supabase
+      .from("messages")
+      .insert([{ user_id: user, text: userMessage, reply: replyMessage }]);
+    if (error) console.error("❌ Supabase Save Error:", error);
+    else console.log("✅ Message saved:", data);
+  } catch (err) {
+    console.error("🔥 Supabase Exception:", err);
+  }
+}
 
 export default async function handler(req, res) {
   if (req.method !== "POST") {
@@ -66,33 +84,34 @@ export default async function handler(req, res) {
       }
     }
 
-    // ===== DEFAULT GPT CHAT =====
+    // ===== DEFAULT GPT CHAT (OpenRouter) =====
     if (!reply) {
-      const gptRes = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-        method: "POST",
-        headers: {
-          "Authorization": `Bearer ${process.env.OPENROUTER_API_KEY}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          model: "openai/gpt-3.5-turbo",
-          messages: [
-            { role: "system", content: "Aap ek helpful AI Assistant hain jiska naam Alfa AI hai." },
-            { role: "user", content: message },
-          ],
-        }),
-      });
+      try {
+        const gptRes = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+          method: "POST",
+          headers: {
+            "Authorization": `Bearer ${process.env.OPENROUTER_API_KEY}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            model: "openai/gpt-3.5-turbo",
+            messages: [
+              { role: "system", content: "Aap ek helpful AI Assistant hain jiska naam Alfa AI hai." },
+              { role: "user", content: message },
+            ],
+          }),
+        });
 
-      const gptData = await gptRes.json();
-      reply = gptData.choices?.[0].message?.content || "⚠️ Koi reply nahi mila.";
+        const gptData = await gptRes.json();
+        reply = gptData.choices?.[0].message?.content || "⚠️ Koi reply nahi mila.";
+      } catch (gptErr) {
+        console.error("GPT Error:", gptErr);
+        reply = "⚠️ GPT response fetch karne me error.";
+      }
     }
 
-    // ===== FIREBASE SAVE =====
-    try {
-      await saveMessage(user, message, reply);
-    } catch (dbErr) {
-      console.error("🔥 Firestore Save Error:", dbErr);
-    }
+    // ===== SUPABASE SAVE =====
+    await saveMessage(user, message, reply);
 
     return res.status(200).json({ reply });
 
