@@ -1,10 +1,17 @@
 {
-  "name": "alfa-ai",
+  "name": "alfa-ai-backend",
   "version": "1.0.0",
+  "description": "Alfa AI Backend with Supabase",
   "main": "index.js",
-  "license": "MIT",
+  "scripts": {
+    "dev": "vercel dev",
+    "start": "node index.js"
+  },
   "dependencies": {
-    "firebase": "^9.22.0",
-    "firebase-admin": "^11.11.0"
+    "@supabase/supabase-js": "^2.33.0",
+    "node-fetch": "^3.3.2"
+  },
+  "engines": {
+    "node": "16.x"
   }
 }
