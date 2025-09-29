@@ -10,9 +10,15 @@ const supabase = createClient(supabaseUrl, supabaseKey);
 // ===== Helper: Save Message to Supabase =====
 async function saveMessage(user, userMessage, replyMessage) {
   try {
+    if (!supabaseUrl || !supabaseKey) {
+      console.error("❌ Supabase URL or Key missing!");
+      return;
+    }
+
     const { data, error } = await supabase
       .from("messages")
-      .insert([{ user_id: user, text: userMessage, reply: replyMessage }]);
+      .insert([{ user_id: user, text: userMessage, reply: replyMessage, created_at: new Date() }]);
+
     if (error) console.error("❌ Supabase Save Error:", error);
     else console.log("✅ Message saved:", data);
   } catch (err) {
@@ -35,7 +41,7 @@ export default async function handler(req, res) {
     // ===== WEATHER HANDLER =====
     if (userMsg.includes("weather") || userMsg.includes("tapman")) {
       const cityMatch = message.match(/in ([a-zA-Z\s]+)/i) || message.match(/ka weather ([a-zA-Z\s]+)/i);
-      let city = cityMatch ? cityMatch[1].trim() : "";
+      const city = cityMatch ? cityMatch[1].trim() : "";
 
       if (!city) {
         reply = "Kripya city ka naam batayein jaha ka weather aapko chahiye.";
