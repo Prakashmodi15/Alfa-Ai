@@ -1,8 +1,9 @@
 {
   "name": "alfa-ai-backend",
   "version": "1.0.0",
-  "description": "Alfa AI Backend with Supabase",
+  "description": "Alfa AI Backend with Supabase, OpenRouter, News, Weather",
   "main": "index.js",
+  "type": "module",
   "scripts": {
     "dev": "vercel dev",
     "start": "node index.js"
@@ -13,5 +14,8 @@
   },
   "engines": {
     "node": "16.x"
+  },
+  "exports": {
+    "./api/*": "./api/*.js"
   }
 }
